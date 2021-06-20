@@ -32,6 +32,14 @@ To install Hurry CLI:
   $ python3 hurry install_mgm [--branch=development] [--install_dir=.]
 ```
 
+### Pro tip
+
+Add an alias in your shell config (eg. ~/.zshrc) so you can use Hurry as `hurry` everywhere :)
+
+```shell
+  alias hurry="python3 /path/to/hurry-cli/hurry"
+```
+
 ## Usage
 
 ```shell
