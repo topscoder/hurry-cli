@@ -1,0 +1,557 @@
+"""
+
+hurry – 💨 Your command is my objective 💨
+
+TODO
+    Implement check method which checks for freqtrade, mgm and config existence
+    Save exchange settings into .hurry config file for faster setup next time
+    Save telegram bot settings into .hurry config file for faster setup next time
+    Make setting up frequi possible
+"""
+
+import glob
+import json
+import coloredlogs, logging
+import os
+import subprocess
+import sys
+from operator import add
+from string import Template
+
+import fire
+import yaml
+from art import tprint
+from InquirerPy import prompt
+
+logging.basicConfig(format='= HURRY = %(levelname)s: %(message)s', level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+coloredlogs.install(level=logging.DEBUG, logger=logger)
+
+config = []
+
+class Hurry():
+    """
+    💨 Your command is my objective 💨
+
+    CLI Tool for setting up a Freqtrade instance containing the MGM strategy
+    """
+
+    def __init__(self):
+        tprint("hurry cli")
+
+        self.config = None
+        self._basedir = os.getcwd()
+
+        if os.path.exists(".hurry") is True:
+            self.config = self._read_config()
+
+        self.__init_freqtrade()
+
+
+    def __init_freqtrade(self):
+        """Initializes the Freqtrade binary
+        """
+
+        if os.path.exists( f"{self._basedir}/.env/bin/freqtrade" ) is False:
+            logger.warning('No freqtrade installation found.')
+            return False
+
+        if self.config is None:
+            return False
+
+        if self.config['install_type'] == "source":
+            self.config['ft_binary'] = f"source {self._basedir}/.env/bin/activate; freqtrade"
+        else:
+            self.config['ft_binary'] = "docker-compose run --rm freqtrade"
+
+        logger.debug(f" Freqtrade binary: `{self.config['ft_binary']}`")
+
+        return True
+
+
+    def install_freqtrade(self, branch = "develop", target_dir = os.getcwd()):
+        """Install Freqtrade the easy way
+
+        :param branch (string, optional): Checkout a specific branch. Defaults to main.
+        :param target_dir (string, optional): Specify a target_dir to install to. Defaults to current_dir.
+
+        Todo:
+            check if freqtrade was installed already and warn user it will be overwritten
+        """
+
+        cmd_str = f"git clone -b {branch} https://github.com/freqtrade/freqtrade.git {target_dir}/temp"
+        self._exec_cmd(cmd_str)
+
+        self._exec_cmd(f'cp -rf {target_dir}/temp/* {target_dir}')
+        self._exec_cmd(f'rm -rf {target_dir}/temp')
+        self._exec_cmd(f'bash {target_dir}/setup.sh --install')
+
+        logger.info(' √√ Freqtrade has been installed. You can now proceed to install MGM. (Hint: hurry install_mgm)')
+
+
+    def install_mgm(self, branch="development", target_dir=os.getcwd()):
+        """Install the MGM strategy
+
+        :param branch (str, optional): [description]. Defaults to "development".
+        :param target_dir ([type], optional): [description]. Defaults to os.getcwd().
+
+        Todo:
+            check if freqtrade was installed already
+            and warn user it will be overwritten AND settings will get lost
+        """
+
+        cmd_str = f"git clone -b {branch} https://github.com/Rikj000/MoniGoMani.git {target_dir}/temp"
+        self._exec_cmd(cmd_str)
+
+        self._exec_cmd(f'cp -rf {target_dir}/temp/user_data/* {target_dir}/user_data/')
+        self._exec_cmd(f'rm -rf {target_dir}/temp')
+
+        logger.info(' √√ MGM has been installed. You can now proceed to setup your instance. (Hint: hurry setup)')
+
+
+    def setup(self):
+        """
+        Saves setup data based on your answers
+        """
+        logger.info(" >>>> Let's answer some questions to make our lifes easier 🤓")
+
+        strategies = map( lambda f :
+                        os.path.basename(f).replace(".py", ""),
+                        glob.glob(self._basedir + "/user_data/strategies/*.py")
+                          )
+
+        strategies_choices = []
+        for s in strategies:
+            strategies_choices.append({"name": s, "value": s})
+
+        if len(strategies_choices) == 0:
+            strat_dir = self._basedir + "/user_data/strategies/"
+            logger.error(
+                f" I could not find any strategy in {strat_dir}. Did you install Freqtrade and MGM?")
+            sys.exit(1)
+
+        hyperopts = map( lambda f : os.path.basename(f).replace(".py", ""),
+                        glob.glob(self._basedir + "/user_data/hyperopts/*.py")
+                        )
+
+        hyperopts_choices = []
+        for s in hyperopts:
+            hyperopts_choices.append({"name": s, "value": s})
+
+        if len(hyperopts_choices) == 0:
+            ho_dir = self._basedir + "/user_data/hyperopts/"
+            logger.error(
+                f" I could not find any hyperopts in {ho_dir}. Did you install Freqtrade and MGM?")
+            sys.exit(1)
+
+        questions = [
+            {
+                "type": "list",
+                "name": "install_type",
+                "message": "Which way you want to use Freqtrade?",
+                "choices": ["docker", "source"]
+            },
+            {
+                "type": "input",
+                "name": "timerange",
+                "message": "Please enter the default timerange you want to use",
+                "default": "20201201-20210316"
+            },
+            {
+                "type": "list",
+                "name": "ho_strategy",
+                "message": "Which HyperOpt Strategy do you want to use?",
+                "choices": strategies_choices
+            },
+            {
+                "type": "list",
+                "name": "ho_loss",
+                "message": "Which HyperOpt Loss do you want to use?",
+                "choices": hyperopts_choices
+            },
+            {
+                "type": "checkbox",
+                "name": "ho_spaces",
+                "message": "Which spaces do you want to HyperOpt?",
+                "choices": ["default","buy","sell","roi","stoploss","trailing","all"],
+                "filter": lambda val : " ".join(val)
+            },
+            {
+                "type": "input",
+                "name": "ho_quotation",
+                "message": "Please enter the default quotation you want to use",
+                "default": "BTC"
+            },
+            {
+                "type": "input",
+                "name": "ho_epochs",
+                "message": "Please enter the amount of epochs you want to HyperOpt",
+                "default": "800",
+                "filter": lambda val : int(val)
+            },
+
+            {
+                "type": "confirm",
+                "message": "Do you want to also setup your exchange?",
+                "name": "proceed_exchange",
+                "default": True,
+            },
+            {
+                "type": "list",
+                "name": "exchange",
+                "message": "Which exchange do you want to use?",
+                "choices": ["binance", "ftx", "bittrex"],
+                "when": lambda result: result["proceed_exchange"]
+            },
+            {
+                "type": "password",
+                "name": "api_key",
+                "message": "Please enter the exchange API key",
+                "when": lambda result: result["proceed_exchange"]
+            },
+            {
+                "type": "password",
+                "name": "api_secret",
+                "message": "Please enter the exchange API secret: ",
+                "when": lambda result: result["proceed_exchange"]
+            }
+
+        ]
+
+        answers = prompt(questions=questions)
+
+        if answers == {}:
+            exit()
+
+        newconfig = {
+            'config': {
+                'install_type': answers.get('install_type'),
+                'timerange': answers.get('timerange'),
+                'exchange': answers.get('exchange'),
+                'hyperopt': {
+                    'strategy': answers.get('ho_strategy'),
+                    'loss': answers.get('ho_loss'),
+                    'spaces': answers.get('ho_spaces'),
+                    'quote': answers.get('ho_quotation'),
+                    'epochs': answers.get('ho_epochs')
+                }
+            }
+        }
+
+        self._write_config(newconfig)
+
+        if answers.get('proceed_exchange') is True:
+            cred = {
+                'exchange': answers.get('exchange'),
+                'api_key': answers.get('api_key'),
+                'api_secret': answers.get('api_secret'),
+            }
+
+            self._save_exchange_credentials(cred)
+
+        self.__setup_telegram()
+
+
+    def __setup_telegram(self) -> bool:
+        """
+        Questionnaire to setup Telegram Bot
+        """
+        questions = [
+            {
+                "type": "confirm",
+                "message": "Do you want to also setup your Telegram bot? ",
+                "name": "proceed_telegram",
+                "default": True,
+            },
+            {
+                "type": "confirm",
+                "message": "Do you want to enable the Telegram Bot?",
+                "name": "enable_telegram",
+                "default": True,
+                "when": lambda result: result["proceed_telegram"]
+            },
+            {
+                "type": "password",
+                "name": "telegram_token",
+                "message": "Please enter your Telegram Bot token: ",
+                "default": "",
+                "when": lambda result: result["proceed_telegram"] and result["enable_telegram"]
+            },
+            {
+                "type": "input",
+                "name": "telegram_chat_id",
+                "message": "Please enter the chat ID: ",
+                "default": "",
+                "when": lambda result: result["proceed_telegram"] and result["enable_telegram"]
+            },
+        ]
+
+        answers = prompt(questions=questions)
+
+        if answers == {}:
+            return False
+
+        if answers.get('proceed_telegram') is True:
+            opt = {
+                'enable_telegram': answers.get('enable_telegram'),
+                'telegram_token': answers.get('telegram_token'),
+                'telegram_chat_id': answers.get('telegram_chat_id')
+            }
+
+            self._save_telegram_credentials(opt)
+
+        return True
+
+
+    def _save_exchange_credentials(self, cred):
+        """
+        Save exchange credentials
+        """
+        file = open(self._basedir+'/user_data/mgm-config-private.json',)
+
+        data = json.load(file)
+
+        data['exchange'] = {
+            "name": cred['exchange'],
+            "key": cred['api_key'],
+            "secret": cred['api_secret']
+        }
+
+        with open(self._basedir+'/user_data/mgm-config-private.json', 'w') as outfile:
+            json.dump(data, outfile)
+
+        logger.info(" √√ Exchange settings written to mgm-config-private.json")
+
+
+    def _save_telegram_credentials(self, opt):
+        """
+        Save Telegram bot settings
+        """
+        file = open(self._basedir+'/user_data/mgm-config-private.json',)
+
+        data = json.load(file)
+
+        data['telegram'] = {
+            "enabled": opt['enable_telegram'],
+            "token": opt['telegram_token'],
+            "chat_id": opt['telegram_chat_id']
+        }
+
+        with open(self._basedir+'/user_data/mgm-config-private.json', 'w') as outfile:
+            json.dump(data, outfile)
+
+        logger.info(" √√ Telegram bot settings written to mgm-config-private.json")
+
+
+    def cleanup(self):
+        """
+        Deletes stored hyperopt config from previous run(s)
+        """
+        logger.info(' Removing user_data/mgm-config-hyperopt.json')
+
+        ho_file = f"{self._basedir}/user_data/mgm-config-hyperopt.json"
+
+        if os.path.exists(ho_file):
+            os.remove(ho_file)
+
+
+    def download_candle_data(self, timerange = None):
+        """
+        Downloads candle data for the given timerange.
+
+        :param timerange = "20210301-20210601": timerange from/to in string format (start-end): yyyymmdd-yyyymmdd
+        """
+        if timerange is None:
+            timerange = self.config['timerange']
+
+        questions = [
+            {
+                'type': 'input',
+                'name': 'timerange',
+                'message': 'Please enter the timerange you want to use',
+                'default': self.config['timerange']
+            },
+            {
+                'type': 'checkbox',
+                'name': 'tickers',
+                'message': 'Specify which tickers to download',
+                'choices': [
+                    {'name': '1m', 'value': '1m'},
+                    {'name': '3m', 'value': '3m'},
+                    {'name': '5m', 'value': '5m'},
+                    {'name': '15m', 'value': '15m'},
+                    {'name': '30m', 'value': '30m'},
+                    {'name': '1h', 'value': '1h'},
+                    {'name': '2h', 'value': '2h'},
+                    {'name': '4h', 'value': '4h'},
+                    {'name': '6h', 'value': '6h'},
+                    {'name': '8h', 'value': '8h'},
+                    {'name': '12h', 'value': '12h'},
+                    {'name': '1d', 'value': '1d'},
+                    {'name': '3d', 'value': '3d'},
+                    {'name': '1w', 'value': '1w'},
+                    {'name': '2w', 'value': '2w'},
+                    {'name': '1M', 'value': '1M'},
+                    {'name': '1y', 'value': '1y'},
+                ],
+                'filter': lambda val : " ".join(val)
+            }
+        ]
+
+        answers = prompt(questions=questions)
+
+        if answers == {}:
+            sys.exit()
+
+        timerange = answers.get('timerange')
+        tickers = answers.get('tickers')
+
+        logger.info(f" Downloading candle data ({tickers}) for timerange {timerange}")
+
+        dcd = f"{self.config['ft_binary']} download-data --timerange {timerange} \
+            -t {tickers} -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json"
+
+        self._exec_cmd(dcd)
+
+
+    def download_static_pairlist(self):
+        """
+        Downloads static pairlist and saves into mgm_pair_lists folder
+        """
+        logger.info(' Computing Top Volume Static Pairlist')
+
+        target_file = '$basedir/user_data/mgm_pair_lists/$exchange-$hyperopt_quote-Top-Volume-StaticPairList.json'
+        target_file = Template(target_file).substitute(
+            basedir=self._basedir,
+            exchange=self.config['exchange'],
+            hyperopt_quote=self.config['hyperopt']['quote']
+        )
+
+        cmd_str = "$ft_binary test-pairlist -c ./user_data/mgm_tools/$exchange-Retrieve-Top-Volume-StaticPairList.json \
+            --quote $hyperopt_quote --print-json | tail -n 1 | jq | $exchange_placeholder > $target_file "
+        cmd_str = Template(cmd_str).substitute(
+            ft_binary=self.config['ft_binary'],
+            exchange=self.config['exchange'],
+            hyperopt_quote=self.config['hyperopt']['quote'],
+            exchange_placeholder="{exchange: {pair_whitelist: .}}",
+            target_file=target_file
+        )
+
+        self._exec_cmd(cmd_str)
+
+        logger.info(" >>>>>>>>>>>>>>>>>>>>>>>>>")
+        logger.info(" Don't forget to copy this pairlist to your own mgm-config.json \
+            file to start using it!")
+        logger.info(" <<<<<<<<<<<<<<<<<<<<<<<<<")
+
+        if os.path.exists(target_file):
+            with open(target_file, 'r') as reader:
+                print(reader.read())
+        else:
+            logger.error("Something happened on the way to heaven 🌟🤦‍♀️")
+
+
+    def hyperopt(self, timerange = None):
+        """
+        HyperOpt Magic. Runs HyperOpt process to find out the most positive settings
+
+        :param timerange: timerange from/to in format (start-end): yyyymmdd-yyyymmdd
+        """
+        logger.info(' Starting HyperOpt process. Keep calm while your computer burns 🔥')
+
+        if timerange is None:
+            timerange = self.config['timerange']
+
+        cmd = '$ft_binary hyperopt --print-all -s $ho_strategy -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json --hyperopt-loss $ho_loss --spaces $ho_spaces -e $ho_epochs --timerange $timerange'
+        cmd = Template(cmd).substitute(
+            ft_binary=self.config['ft_binary'],
+            ho_strategy=self.config['hyperopt']['strategy'],
+            ho_loss=self.config['hyperopt']['loss'],
+            ho_spaces=self.config['hyperopt']['spaces'],
+            ho_epochs=self.config['hyperopt']['epochs'],
+            timerange=timerange
+        )
+
+        self._exec_cmd(cmd)
+
+
+    @classmethod
+    def hyperopt_show_results(cls, epoch : int):
+        """Shows the HyperOpt results for given epoch
+
+        :param epoch (int): The epoch number to show
+        """
+        logger.info(' Showing HyperOpt results for epoch # {epoch}')
+
+        cls._exec_cmd(f"{cls.config['ft_binary']} hyperopt-show -n {epoch}")
+
+
+    def hyperopt_apply_epoch(self, epoch : int):
+        """Apply HyperOpt results from given epoch
+
+        :param epoch (int): The epoch number to use
+        """
+        logger.info(f' Apply HyperOpt results of epoch # {epoch}')
+
+        self._exec_cmd(f"{self.config['ft_binary']} hyperopt-show -n {epoch} -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json --no-header --print-json | tail -n 1 | jq '.' > ./user_data/mgm-config-hyperopt.json")
+
+
+    def start_trader(self, dry_run = False):
+        """
+        Start the trader. Your ultimate goal!
+        """
+        cmd = f"{self.config['ft_binary']} trade -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json -c ./user_data/mgm-config-hyperopt.json --strategy {self.config['hyperopt']['strategy']}"
+
+        if dry_run is True:
+            cmd = cmd + " --dry-run"
+
+        self._exec_cmd(cmd)
+
+
+    @staticmethod
+    def _exec_cmd(cmd: str):
+        logger.debug(cmd)
+        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, encoding='utf-8')
+        output, err = p.communicate()
+        logger.debug(output)
+
+
+    @staticmethod
+    def _read_config():
+        with open(".hurry", "r") as ymlfile:
+            cfg = yaml.full_load(ymlfile) or {}
+
+        if 'config' in cfg:
+            return cfg['config']
+
+        return None
+
+
+    @staticmethod
+    def _write_config(config = None):
+
+        if config is None:
+            config = {
+                'config': {
+                    'install_type': 'docker',
+                    'timerange': '20201201-20210316',
+                    'exchange': 'binance',
+                    'hyperopt': {
+                        'strategy': 'MoniGoManiHyperStrategy',
+                        'loss': 'UncloggedWinRatioAndProfitRatioLoss',
+                        'spaces': 'buy sell',
+                        'quote': 'BTC',
+                        'epochs': 800
+                    }
+                }
+            }
+
+        with open(r'.hurry', 'w') as file:
+            yaml.dump(config, file)
+
+        logger.info(" √√ Configuration data written to .hurry file")
+
+
+
+if __name__ == "__main__":
+    fire.Fire(Hurry)
