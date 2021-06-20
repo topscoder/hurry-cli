@@ -67,7 +67,8 @@ Add an alias in your shell config (eg. ~/.zshrc) so you can use Hurry as `hurry`
 
 ```
 
-#### example: hurry setup
+### example: hurry setup
+
 ```shell
 ~/Projects/ft » hurry setup
  _                                       _  _
