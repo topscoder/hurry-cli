@@ -9,7 +9,7 @@ Straight out of heaven. Hurry is a CLI tool to speed setting up [MoniGoMani](htt
 
 ```shell
   # Install required Python packages using the [PIP package manager](https://pip.pypa.io/en/stable/installing/)
-  $ pip3 install art fire logger coloredlogs pyaml InquirerPy
+  pip3 install art fire logger coloredlogs pyaml InquirerPy
 ```
 
 ## Installation
@@ -17,19 +17,19 @@ Straight out of heaven. Hurry is a CLI tool to speed setting up [MoniGoMani](htt
 To install Hurry CLI:
 
 ```shell
-  $ curl "https://raw.githubusercontent.com/denvers/hurry-cli/main/hurry" --output hurry
+  curl "https://raw.githubusercontent.com/topscoder/hurry-cli/main/hurry" --output hurry
 ```
 
 (optional) Install [Freqtrade](https://github.com/freqtrade/freqtrade):
 
 ```shell
-  $ python3 hurry install_freqtrade [--branch=develop] [--instal_dir=.]
+  python3 hurry install_freqtrade [--branch=develop] [--instal_dir=.]
 ```
 
 (optional) Install [MGM Hyper Strategy](https://github.com/Rikj000/MoniGoMani):
 
 ```shell
-  $ python3 hurry install_mgm [--branch=development] [--install_dir=.]
+  python3 hurry install_mgm [--branch=development] [--install_dir=.]
 ```
 
 ### Pro tip
@@ -44,7 +44,7 @@ Add an alias in your shell config (eg. ~/.zshrc) so you can use Hurry as `hurry`
 
 ```shell
 
-  $ python3 hurry --help
+  python3 hurry --help
 
   Usage: python3 hurry [command] [options]
 
