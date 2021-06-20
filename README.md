@@ -51,6 +51,9 @@ Add an alias in your shell config (eg. ~/.zshrc) so you can use Hurry as `hurry`
   alias hurry="python3 /path/to/hurry-cli/hurry"
 ```
 
+Or, if you use (`fish-shell`)[https://fishshell.com] than `hurry.fish` is your friend.
+Copy `hurry.fish` to your fish functions folder (`~/.config/fish/functions/hurry.fish`) and you are ready to roll!
+
 ## Usage
 
 ```shell
