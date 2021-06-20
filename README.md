@@ -17,7 +17,7 @@ Straight out of heaven. Hurry is a CLI tool to speed setting up [MoniGoMani](htt
 To install Hurry CLI:
 
 ```shell
-  curl "https://raw.githubusercontent.com/topscoder/hurry-cli/main/hurry" --output hurry
+  curl "https://raw.githubusercontent.com/topscoder/hurry-cli/master/hurry" --output hurry
 ```
 
 (optional) Install [Freqtrade](https://github.com/freqtrade/freqtrade):
