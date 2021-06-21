@@ -433,15 +433,17 @@ class Hurry():
             ft_binary=self.config['ft_binary'],
             exchange=self.config['exchange'],
             hyperopt_quote=self.config['hyperopt']['quote'],
-            exchange_placeholder="{exchange: {pair_whitelist: .}}",
+            exchange_placeholder="{{exchange: {{pair_whitelist: .}}}}",
             target_file=target_file
         )
 
         self._exec_cmd(cmd_str)
 
         logger.info(" >>>>>>>>>>>>>>>>>>>>>>>>>")
-        logger.info(" Don't forget to copy this pairlist to your own mgm-config.json \
-            file to start using it!")
+        logger.info((
+            " Don't forget to copy this pairlist to your own mgm-config.json "
+            "file to start using it!"
+        ))
         logger.info(" <<<<<<<<<<<<<<<<<<<<<<<<<")
 
         if os.path.exists(target_file):
