@@ -66,7 +66,7 @@ class Hurry():
         else:
             self.config['ft_binary'] = "docker-compose run --rm freqtrade"
 
-        logger.debug(f" Freqtrade binary: `{self.config['ft_binary']}`")
+        logger.debug(f"Freqtrade binary: `{self.config['ft_binary']}`")
 
         return True
 
@@ -88,7 +88,7 @@ class Hurry():
         self._exec_cmd(f'rm -rf {target_dir}/temp')
         self._exec_cmd(f'bash {target_dir}/setup.sh --install')
 
-        logger.info(' √√ Freqtrade has been installed. You can now proceed to install MGM. (Hint: hurry install_mgm)')
+        logger.info('🍺 Freqtrade has been installed. You can now proceed to install MGM. (Hint: hurry install_mgm)')
 
 
     def install_mgm(self, branch="development", target_dir=os.getcwd()):
@@ -108,7 +108,7 @@ class Hurry():
         self._exec_cmd(f'cp -rf {target_dir}/temp/user_data/* {target_dir}/user_data/')
         self._exec_cmd(f'rm -rf {target_dir}/temp')
 
-        logger.info(' √√ MGM has been installed. You can now proceed to setup your instance. (Hint: hurry setup)')
+        logger.info('🍺 MGM has been installed. You can now proceed to setup your instance. (Hint: hurry setup)')
 
 
     def setup(self):
@@ -129,7 +129,7 @@ class Hurry():
         if len(strategies_choices) == 0:
             strat_dir = self._basedir + "/user_data/strategies/"
             logger.error(
-                f" I could not find any strategy in {strat_dir}. Did you install Freqtrade and MGM?")
+                f"I could not find any strategy in {strat_dir}. Did you install Freqtrade and MGM?")
             sys.exit(1)
 
         hyperopts = map( lambda f : os.path.basename(f).replace(".py", ""),
@@ -143,7 +143,7 @@ class Hurry():
         if len(hyperopts_choices) == 0:
             ho_dir = self._basedir + "/user_data/hyperopts/"
             logger.error(
-                f" I could not find any hyperopts in {ho_dir}. Did you install Freqtrade and MGM?")
+                f"I could not find any hyperopts in {ho_dir}. Did you install Freqtrade and MGM?")
             sys.exit(1)
 
         questions = [
@@ -322,7 +322,7 @@ class Hurry():
         with open(self._basedir+'/user_data/mgm-config-private.json', 'w') as outfile:
             json.dump(data, outfile)
 
-        logger.info(" √√ Exchange settings written to mgm-config-private.json")
+        logger.info("🍺 Exchange settings written to mgm-config-private.json")
 
 
     def _save_telegram_credentials(self, opt):
@@ -342,14 +342,14 @@ class Hurry():
         with open(self._basedir+'/user_data/mgm-config-private.json', 'w') as outfile:
             json.dump(data, outfile)
 
-        logger.info(" √√ Telegram bot settings written to mgm-config-private.json")
+        logger.info("🍺 Telegram bot settings written to mgm-config-private.json")
 
 
     def cleanup(self):
         """
         Deletes stored hyperopt config from previous run(s)
         """
-        logger.info(' Removing user_data/mgm-config-hyperopt.json')
+        logger.info('Removing user_data/mgm-config-hyperopt.json')
 
         ho_file = f"{self._basedir}/user_data/mgm-config-hyperopt.json"
 
@@ -408,7 +408,7 @@ class Hurry():
         timerange = answers.get('timerange')
         tickers = answers.get('tickers')
 
-        logger.info(f" Downloading candle data ({tickers}) for timerange {timerange}")
+        logger.info(f"Downloading candle data ({tickers}) for timerange {timerange}")
 
         dcd = f"{self.config['ft_binary']} download-data --timerange {timerange} \
             -t {tickers} -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json"
@@ -420,7 +420,7 @@ class Hurry():
         """
         Downloads static pairlist and saves into mgm_pair_lists folder
         """
-        logger.info(' Computing Top Volume Static Pairlist')
+        logger.info('Computing Top Volume Static Pairlist')
 
         target_file = '$basedir/user_data/mgm_pair_lists/$exchange-$hyperopt_quote-Top-Volume-StaticPairList.json'
         target_file = Template(target_file).substitute(
@@ -429,22 +429,26 @@ class Hurry():
             hyperopt_quote=self.config['hyperopt']['quote']
         )
 
-        cmd_str = "$ft_binary test-pairlist -c ./user_data/mgm_tools/$exchange-Retrieve-Top-Volume-StaticPairList.json \
-            --quote $hyperopt_quote --print-json | tail -n 1 | jq | $exchange_placeholder > $target_file "
-        cmd_str = Template(cmd_str).substitute(
-            ft_binary=self.config['ft_binary'],
-            exchange=self.config['exchange'],
-            hyperopt_quote=self.config['hyperopt']['quote'],
-            exchange_placeholder="{{exchange: {{pair_whitelist: .}}}}",
-            target_file=target_file
+        ft_binary=self.config['ft_binary']
+        basedir=self._basedir
+        exchange=self.config['exchange']
+        hyperopt_quote=self.config['hyperopt']['quote']
+
+        cmd_str = (
+            f"{ft_binary} test-pairlist -c ./user_data/mgm_tools/{exchange}-Retrieve-Top-Volume-StaticPairList.json "
+            f"--quote {hyperopt_quote} --print-json | tail -n 1 | "
+            "jq | {exchange: {pair_whitelist: .}} > "
+            f"{target_file} "
         )
+
+        sys.exit(cmd_str)
 
         self._exec_cmd(cmd_str)
 
         logger.info(" >>>>>>>>>>>>>>>>>>>>>>>>>")
         logger.info((
-            " Don't forget to copy this pairlist to your own mgm-config.json "
-            "file to start using it!"
+            "✋ Don't forget to copy this pairlist to your own mgm-config.json \n"
+            f"{target_file}"
         ))
         logger.info(" <<<<<<<<<<<<<<<<<<<<<<<<<")
 
@@ -452,7 +456,7 @@ class Hurry():
             with open(target_file, 'r') as reader:
                 print(reader.read())
         else:
-            logger.error("Something happened on the way to heaven 🌟🤦‍♀️")
+            logger.error("🤦‍♀️ Something happened on the way to heaven 🌟")
 
 
     def hyperopt(self, timerange = None):
@@ -461,7 +465,7 @@ class Hurry():
 
         :param timerange: timerange from/to in format (start-end): yyyymmdd-yyyymmdd
         """
-        logger.info(' Starting HyperOpt process. Keep calm while your computer burns 🔥')
+        logger.info('Starting HyperOpt process. Keep calm while your computer burns 🔥')
 
         if timerange is None:
             timerange = self.config['timerange']
@@ -485,7 +489,7 @@ class Hurry():
 
         :param epoch (int): The epoch number to show
         """
-        logger.info(' Showing HyperOpt results for epoch # {epoch}')
+        logger.info('Showing HyperOpt results for epoch # {epoch}')
 
         cls._exec_cmd(f"{cls.config['ft_binary']} hyperopt-show -n {epoch}")
 
@@ -495,7 +499,7 @@ class Hurry():
 
         :param epoch (int): The epoch number to use
         """
-        logger.info(f' Apply HyperOpt results of epoch # {epoch}')
+        logger.info(f'Apply HyperOpt results of epoch # {epoch}')
 
         self._exec_cmd(f"{self.config['ft_binary']} hyperopt-show -n {epoch} -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json --no-header --print-json | tail -n 1 | jq '.' > ./user_data/mgm-config-hyperopt.json")
 
@@ -553,7 +557,7 @@ class Hurry():
         with open(r'.hurry', 'w') as file:
             yaml.dump(config, file)
 
-        logger.info(" √√ Configuration data written to .hurry file")
+        logger.info("🍺 Configuration data written to .hurry file")
 
 
 
