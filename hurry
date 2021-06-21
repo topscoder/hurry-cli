@@ -74,6 +74,9 @@ class Hurry():
     def install_freqtrade(self, branch = "develop", target_dir = os.getcwd()):
         """Install Freqtrade the easy way
 
+        Usage:
+            hurry install_freqtrade [--branch=develop] [--target_dir=.]
+
         :param branch (string, optional): Checkout a specific branch. Defaults to main.
         :param target_dir (string, optional): Specify a target_dir to install to. Defaults to current_dir.
 
@@ -93,6 +96,9 @@ class Hurry():
 
     def install_mgm(self, branch="development", target_dir=os.getcwd()):
         """Install the MGM strategy
+
+        Usage:
+            hurry install_mgm [--branch=development] [--target_dir=.]
 
         :param branch (str, optional): [description]. Defaults to "development".
         :param target_dir ([type], optional): [description]. Defaults to os.getcwd().
@@ -114,6 +120,9 @@ class Hurry():
     def setup(self):
         """
         Saves setup data based on your answers
+
+        Usage:
+            hurry setup
         """
         logger.info(" >>>> Let's answer some questions to make our lifes easier 🤓")
 
@@ -348,6 +357,9 @@ class Hurry():
     def cleanup(self):
         """
         Deletes stored hyperopt config from previous run(s)
+
+        Usage:
+            hurry cleanup
         """
         logger.info(' Removing user_data/mgm-config-hyperopt.json')
 
@@ -360,6 +372,9 @@ class Hurry():
     def download_candle_data(self, timerange = None):
         """
         Downloads candle data for the given timerange.
+
+        Usage:
+            hurry download_candle_data [--timerange=20210301-20210601]
 
         :param timerange = "20210301-20210601": timerange from/to in string format (start-end): yyyymmdd-yyyymmdd
         """
@@ -419,6 +434,9 @@ class Hurry():
     def download_static_pairlist(self):
         """
         Downloads static pairlist and saves into mgm_pair_lists folder
+
+        Usage:
+            hurry download_static_pairlist
         """
         logger.info(' Computing Top Volume Static Pairlist')
 
@@ -457,6 +475,9 @@ class Hurry():
         """
         HyperOpt Magic. Runs HyperOpt process to find out the most positive settings
 
+        Usage:
+            hurry hyperopt [--timerange=20210301-20210601]
+
         :param timerange: timerange from/to in format (start-end): yyyymmdd-yyyymmdd
         """
         logger.info(' Starting HyperOpt process. Keep calm while your computer burns 🔥')
@@ -478,21 +499,35 @@ class Hurry():
 
 
     @classmethod
-    def hyperopt_show_results(cls, epoch : int):
+    def hyperopt_show_results(cls, epoch : int = 0):
         """Shows the HyperOpt results for given epoch
+
+        Usage:
+            hurry hyperopt_show_results --epoch=1337
 
         :param epoch (int): The epoch number to show
         """
+        if epoch is 0:
+            logger.error(' Please pass the epoch number through. Hint: hurry hyperopt_show_results --epoch=1337')
+            sys.exit(1)
+
         logger.info(' Showing HyperOpt results for epoch # {epoch}')
 
         cls._exec_cmd(f"{cls.config['ft_binary']} hyperopt-show -n {epoch}")
 
 
-    def hyperopt_apply_epoch(self, epoch : int):
+    def hyperopt_apply_epoch(self, epoch : int = 0):
         """Apply HyperOpt results from given epoch
+
+        Usage:
+            hurry hyperopt_apply_epoch --epoch=1337
 
         :param epoch (int): The epoch number to use
         """
+        if epoch is 0:
+            logger.error(' Please pass the epoch number through. Hint: hurry hyperopt_apply_epoch --epoch=1337')
+            sys.exit(1)
+
         logger.info(f' Apply HyperOpt results of epoch # {epoch}')
 
         self._exec_cmd(f"{self.config['ft_binary']} hyperopt-show -n {epoch} -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json --no-header --print-json | tail -n 1 | jq '.' > ./user_data/mgm-config-hyperopt.json")
@@ -501,6 +536,11 @@ class Hurry():
     def start_trader(self, dry_run = False):
         """
         Start the trader. Your ultimate goal!
+
+        Usage:
+            hurry hyperopt_apply_epoch --epoch=1337
+
+        :param dry_run (bool): Use dry_run mode
         """
         cmd = f"{self.config['ft_binary']} trade -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json -c ./user_data/mgm-config-hyperopt.json --strategy {self.config['hyperopt']['strategy']}"
 
