@@ -513,7 +513,7 @@ class Hurry():
 
         :param epoch (int): The epoch number to show
         """
-        if epoch is 0:
+        if epoch == 0:
             logger.error('🤷‍♂️ Please pass the epoch number through. Hint: hurry hyperopt_show_results --epoch=1337')
             sys.exit(1)
 
@@ -531,13 +531,13 @@ class Hurry():
         :param epoch (int): The epoch number to use
         :param run (int): Run number of hyperopt. First run has different command than second +.
         """
-        if epoch is 0:
+        if epoch == 0:
             logger.error('🤷‍♂️ Please pass the epoch number through. Hint: hurry hyperopt_apply_epoch --epoch=1337')
             sys.exit(1)
 
         logger.info(f'👉 Applying HyperOpt results of epoch # {epoch}')
 
-        if run is 1:
+        if run == 1:
             self._exec_cmd(f"{self.config['ft_binary']} hyperopt-show -n {epoch} -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json --no-header --print-json | tail -n 1 | jq '.' > ./user_data/mgm-config-hyperopt.json")
         else:
             self._exec_cmd(f"{self.config['ft_binary']} hyperopt-show -n {epoch} -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json --no-header --print-json | tail -n 1 | jq '.' > ./tmp.json && jq -s '.[0] * .[1]' ./user_data/mgm-config-hyperopt.json ./tmp.json > ./tmp2.json && rm ./tmp.json ./user_data/mgm-config-hyperopt.json && mv ./tmp2.json ./user_data/mgm-config-hyperopt.json && jq '.' ./user_data/mgm-config-hyperopt.json")
