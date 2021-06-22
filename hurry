@@ -1,4 +1,4 @@
-/* vim: syntax=python */
+# /* vim: syntax=python */
 
 """
 
@@ -430,12 +430,12 @@ class Hurry():
         )
 
         cmd_str = "$ft_binary test-pairlist -c ./user_data/mgm_tools/$exchange-Retrieve-Top-Volume-StaticPairList.json \
-            --quote $hyperopt_quote --print-json | tail -n 1 | jq | $exchange_placeholder > $target_file "
+            --quote $hyperopt_quote --print-json | tail -n 1 | jq '.| $exchange_placeholder' > $target_file "
         cmd_str = Template(cmd_str).substitute(
             ft_binary=self.config['ft_binary'],
             exchange=self.config['exchange'],
             hyperopt_quote=self.config['hyperopt']['quote'],
-            exchange_placeholder="{{exchange: {{pair_whitelist: .}}}}",
+            exchange_placeholder="{exchange: {pair_whitelist: .}}",
             target_file=target_file
         )
 
