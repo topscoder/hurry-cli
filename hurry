@@ -89,7 +89,7 @@ class Hurry():
 
         self._exec_cmd(f'cp -rf {target_dir}/temp/* {target_dir}')
         self._exec_cmd(f'rm -rf {target_dir}/temp')
-        self._exec_cmd(f'bash {target_dir}/setup.sh --install')
+        self._exec_cmd(f'deactivate; bash {target_dir}/setup.sh --install')
 
         logger.info('🍺 Freqtrade has been installed. You can now proceed to install MGM. (Hint: hurry install_mgm)')
 
