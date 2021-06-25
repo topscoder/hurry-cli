@@ -4,11 +4,12 @@
 
 hurry – 💨 Your command is my objective 💨
 
-TODO
-    Implement check method which checks for freqtrade, mgm and config existence
-    Save exchange settings into .hurry config file for faster setup next time
-    Save telegram bot settings into .hurry config file for faster setup next time
-    Make setting up frequi possible
+Timerange examples;
+    Downtrend               20210509-20210524
+    Uptrend		    20210127-20210221
+    Sidetrend		    20210518-20210610
+    Final	            20210425-20210610
+
 """
 
 import glob
@@ -475,26 +476,34 @@ class Hurry():
             logger.error("🤷‍♂️ Something happened on the way to heaven 🌟🤦‍♀️")
 
 
-    def hyperopt(self, timerange = None):
+    def hyperopt(self, timerange = None, strategy = None, spaces = None):
         """
         HyperOpt Magic. Runs HyperOpt process to find out the most positive settings
 
         Usage:
-            hurry hyperopt [--timerange=20210301-20210601]
+            hurry hyperopt [--timerange=20210301-20210601] [--strategy=MoniGoManiHyperStrategy] [--spaces=all]
 
         :param timerange: timerange from/to in format (start-end): yyyymmdd-yyyymmdd
+        :param strategy: Hyper Opt strategy to use
+        :param spaces: Spaces to optimize for [default, all, buy, sell, roi, stoploss, etc]
         """
         logger.info('👉 Starting HyperOpt run. Keep calm while your computer burns 🔥')
 
         if timerange is None:
             timerange = self.config['timerange']
 
+        if strategy is None:
+            strategy = self.config['hyperopt']['strategy']
+
+        if spaces is None:
+            spaces = self.config['hyperopt']['spaces']
+
         cmd = '$ft_binary hyperopt --print-all -s $ho_strategy -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json --hyperopt-loss $ho_loss --spaces $ho_spaces -e $ho_epochs --timerange $timerange'
         cmd = Template(cmd).substitute(
             ft_binary=self.config['ft_binary'],
-            ho_strategy=self.config['hyperopt']['strategy'],
+            ho_strategy=strategy,
             ho_loss=self.config['hyperopt']['loss'],
-            ho_spaces=self.config['hyperopt']['spaces'],
+            ho_spaces=spaces,
             ho_epochs=self.config['hyperopt']['epochs'],
             timerange=timerange
         )
@@ -543,6 +552,26 @@ class Hurry():
             self._exec_cmd(f"{self.config['ft_binary']} hyperopt-show -n {epoch} -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json --no-header --print-json | tail -n 1 | jq '.' > ./tmp.json && jq -s '.[0] * .[1]' ./user_data/mgm-config-hyperopt.json ./tmp.json > ./tmp2.json && rm ./tmp.json ./user_data/mgm-config-hyperopt.json && mv ./tmp2.json ./user_data/mgm-config-hyperopt.json && jq '.' ./user_data/mgm-config-hyperopt.json")
 
         logger.info(f'🍺 Hyperopt results of epoch # {epoch} are applied.')
+
+    def backtest(self, timerange = None):
+        # freqtrade backtesting -s MoniGoManiHyperStrategy -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json --timerange 20210101-20210316 --enable-protections
+
+        logger.info(
+            '👉 Start backtesting. Lets see how it turns out!')
+
+        if timerange is None:
+            timerange = self.config['timerange']
+
+        cmd = '$ft_binary backtesting -s $ho_strategy -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json --timerange $timerange --enable-protections'
+        cmd = Template(cmd).substitute(
+            ft_binary=self.config['ft_binary'],
+            ho_strategy=self.config['hyperopt']['strategy'],
+            timerange=timerange
+        )
+
+        self._exec_cmd(cmd)
+
+        logger.info('🍺 Backtesting ready... 🤑')
 
 
     def start_trader(self, dry_run = False):
