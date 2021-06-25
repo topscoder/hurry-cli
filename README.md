@@ -20,7 +20,7 @@ Straight out of heaven. Hurry is a CLI tool to speed setting up [MoniGoMani](htt
 
 ```shell
   # Install required Python packages using the [PIP package manager](https://pip.pypa.io/en/stable/installing/)
-  pip3 install art fire logger coloredlogs pyaml InquirerPy
+  pip3 install -r requirements.txt
 ```
 
 ## Installation
