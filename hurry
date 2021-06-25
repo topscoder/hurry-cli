@@ -90,7 +90,7 @@ class Hurry():
 
         self._exec_cmd(f'cp -rf {target_dir}/temp/* {target_dir}')
         self._exec_cmd(f'rm -rf {target_dir}/temp')
-        self._exec_cmd(f'bash {target_dir}/setup.sh --install')
+        self._exec_cmd(f'deactivate; bash {target_dir}/setup.sh --install')
 
         logger.info('🍺 Freqtrade has been installed. You can now proceed to install MGM. (Hint: hurry install_mgm)')
 
@@ -448,15 +448,17 @@ class Hurry():
         target_file = '$basedir/user_data/mgm_pair_lists/$exchange-$hyperopt_quote-Top-Volume-StaticPairList.json'
         target_file = Template(target_file).substitute(
             basedir=self._basedir,
-            exchange=self.config['exchange'],
+            exchange=self.config['exchange'].title(),
             hyperopt_quote=self.config['hyperopt']['quote']
         )
 
         cmd_str = "$ft_binary test-pairlist -c ./user_data/mgm_tools/$exchange-Retrieve-Top-Volume-StaticPairList.json \
-            --quote $hyperopt_quote --print-json | tail -n 1 | jq '.| $exchange_placeholder' > $target_file "
+            --quote $hyperopt_quote --print-json | tail -n 1 | jq '.| $exchange_placeholder' > $target_file"
+        # temporary disabled due to nasty bug
+        # && jq 'del(.exchange.pair_whitelist )' ./user_data/mgm-config.json > ./tmp.json && jq -s '.[0] * .[1]' ./tmp.json ./user_data/mgm_pair_lists/$exchange-$hyperopt_quote-Top-Volume-StaticPairList.json > ./user_data/mgm-config.json && rm ./tmp.json && jq '.' ./user_data/mgm-config.json"
         cmd_str = Template(cmd_str).substitute(
             ft_binary=self.config['ft_binary'],
-            exchange=self.config['exchange'],
+            exchange=self.config['exchange'].title(),
             hyperopt_quote=self.config['hyperopt']['quote'],
             exchange_placeholder="{exchange: {pair_whitelist: .}}",
             target_file=target_file
