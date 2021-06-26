@@ -1,16 +1,8 @@
-# hurry – 💨 Your command is my objective 💨
 
-```shell
-
- _                                       _  _
-| |__   _   _  _ __  _ __  _   _    ___ | |(_)
-| '_ \ | | | || '__|| '__|| | | |  / __|| || |
-| | | || |_| || |   | |   | |_| | | (__ | || |
-|_| |_| \__,_||_|   |_|    \__, |  \___||_||_|
-                           |___/
-
-```
-
+<p align="center">
+<img src="https://user-images.githubusercontent.com/86197446/123507408-6d624900-d669-11eb-9606-4a022bc4a117.png" width="300" height="289" align="center">
+</p>
+ 
 Straight out of heaven. Hurry is a CLI tool to speed setting up [MoniGoMani](https://github.com/Rikj000/MoniGoMani) HyperStrategy & co. `#freqtrade` `#hyperopting` `#trading` `#strategy`
 
 ## Requirements
