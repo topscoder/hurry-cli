@@ -376,14 +376,10 @@ class Hurry():
         """
         Downloads candle data for the given timerange.
 
-<<<<<<< HEAD
         Usage:
             hurry download_candle_data [--timerange=20210301-20210601]
 
         :param timerange = "20210301-20210601": timerange from/to in string format (start-end): yyyymmdd-yyyymmdd
-=======
-        :param string timerange = None: timerange from/to in string format (start-end): yyyymmdd-yyyymmdd
->>>>>>> 19048fcf543fc2064625ad2e039b5d6de72d54e0
         """
         if timerange is None:
             timerange = self.config['timerange']
@@ -491,17 +487,11 @@ class Hurry():
         HyperOpt Magic. Runs HyperOpt process to find out the most positive settings
 
         Usage:
-<<<<<<< HEAD
-            hurry hyperopt [--timerange=20210301-20210601]
-
-        :param timerange: timerange from/to in format (start-end): yyyymmdd-yyyymmdd
-=======
             hurry hyperopt [--timerange=20210301-20210601] [--strategy=MoniGoManiHyperStrategy] [--spaces=all]
 
         :param timerange = None: timerange from/to in format (start-end): yyyymmdd-yyyymmdd
         :param strategy = None: Hyper Opt strategy to use
         :param spaces = None: Spaces to optimize for [default, all, buy, sell, roi, stoploss, etc]
->>>>>>> 19048fcf543fc2064625ad2e039b5d6de72d54e0
         """
         logger.info('👉 Starting HyperOpt run. Keep calm while your computer burns 🔥')
 
@@ -535,52 +525,20 @@ class Hurry():
     def hyperopt_show_results(cls, epoch : int = 0):
         """Shows the HyperOpt results for given epoch
 
-<<<<<<< HEAD
         Usage:
             hurry hyperopt_show_results --epoch=1337
 
-        :param epoch (int): The epoch number to show
-=======
         Args:
             :param epoch = 0: The epoch number to show
->>>>>>> 19048fcf543fc2064625ad2e039b5d6de72d54e0
         """
         if epoch == 0:
             logger.error('🤷‍♂️ Please pass the epoch number through. Hint: hurry hyperopt_show_results --epoch=1337')
             sys.exit(1)
-<<<<<<< HEAD
-
-        logger.info('👉  Showing HyperOpt results for epoch # {epoch}')
-=======
->>>>>>> 19048fcf543fc2064625ad2e039b5d6de72d54e0
 
         logger.info('👉  Showing HyperOpt results for epoch # {epoch}')
 
         cls.__exec_cmd(f"{cls.config['ft_binary']} hyperopt-show -n {epoch}")
 
-<<<<<<< HEAD
-    def hyperopt_apply_epoch(self, epoch : int = 0, run = 1):
-        """Apply HyperOpt results from given epoch
-
-        Usage:
-            hurry hyperopt_apply_epoch --epoch=1337 --run=1
-
-        :param epoch (int): The epoch number to use
-        :param run (int): Run number of hyperopt. First run has different command than second +.
-        """
-        if epoch == 0:
-            logger.error('🤷‍♂️ Please pass the epoch number through. Hint: hurry hyperopt_apply_epoch --epoch=1337')
-            sys.exit(1)
-
-        logger.info(f'👉 Applying HyperOpt results of epoch # {epoch}')
-
-        if run == 1:
-            self._exec_cmd(f"{self.config['ft_binary']} hyperopt-show -n {epoch} -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json --no-header --print-json | tail -n 1 | jq '.' > ./user_data/mgm-config-hyperopt.json")
-        else:
-            self._exec_cmd(f"{self.config['ft_binary']} hyperopt-show -n {epoch} -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json --no-header --print-json | tail -n 1 | jq '.' > ./tmp.json && jq -s '.[0] * .[1]' ./user_data/mgm-config-hyperopt.json ./tmp.json > ./tmp2.json && rm ./tmp.json ./user_data/mgm-config-hyperopt.json && mv ./tmp2.json ./user_data/mgm-config-hyperopt.json && jq '.' ./user_data/mgm-config-hyperopt.json")
-
-        logger.info(f'🍺 Hyperopt results of epoch # {epoch} are applied.')
-=======
 
     def hyperopt_apply_epoch(self, epoch : int = 0, run = 1):
         """Apply HyperOpt results from given epoch
@@ -629,7 +587,6 @@ class Hurry():
         self.__exec_cmd(cmd)
 
         logger.info('🍺 Backtesting ready... 🤑')
->>>>>>> 19048fcf543fc2064625ad2e039b5d6de72d54e0
 
 
     def start_trader(self, dry_run = False):
@@ -637,16 +594,10 @@ class Hurry():
         Start the trader. Your ultimate goal!
 
         Usage:
-<<<<<<< HEAD
-            hurry hyperopt_apply_epoch --dry_run=False
-
-        :param dry_run (bool): Use dry_run mode
-=======
             hurry start_trader --dry_run=False
 
         Args:
             dry_run (bool, optional): Use dry_run mode. Defaults to False
->>>>>>> 19048fcf543fc2064625ad2e039b5d6de72d54e0
         """
         cmd = f"{self.config['ft_binary']} trade -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json -c ./user_data/mgm-config-hyperopt.json --strategy {self.config['hyperopt']['strategy']}"
 
@@ -655,11 +606,7 @@ class Hurry():
 
         logger.info('👉 Starting the trade bot. The real deal 🤓')
 
-<<<<<<< HEAD
-        self._exec_cmd(cmd)
-=======
         self.__exec_cmd(cmd)
->>>>>>> 19048fcf543fc2064625ad2e039b5d6de72d54e0
 
 
     @staticmethod
