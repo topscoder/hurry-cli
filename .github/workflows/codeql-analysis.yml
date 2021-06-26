@@ -33,34 +33,21 @@ jobs:
       fail-fast: false
       matrix:
         language: [ 'python' ]
-        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python' ]
-        # Learn more:
-        # https://docs.github.com/en/free-pro-team@latest/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#changing-the-languages-that-are-analyzed
-
+        
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-
-    # Initializes the CodeQL tools for scanning.
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
-      with:
-        languages: ${{ matrix.language }}
-        # If you wish to specify custom queries, you can do so here or in a config file.
-        # By default, queries listed here will override any specified in a config file.
-        # Prefix the list here with "+" to use these queries and those in the config file.
-        # queries: ./path/to/local/query, your-org/your-repo/queries@main
-
+      
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl
     
-    - name: Ensure pip, setuptools, and wheel are up to date
-      shell: bash
-      run: python3 -m pip install --upgrade pip setuptools wheel 
+#     - name: Ensure pip, setuptools, and wheel are up to date
+#       shell: bash
+#       run: python3 -m pip install --upgrade pip setuptools wheel 
       
-    - name: Install Hurry dependencies
-      shell: bash
-      run: python3 -m pip install -r requirements.txt
+#     - name: Install Hurry dependencies
+#       shell: bash
+#       run: python3 -m pip install -r requirements.txt
 
     - name: GitHub Action for pylint
       uses: cclauss/GitHub-Action-for-pylint@0.7.0
