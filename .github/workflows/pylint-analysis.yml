@@ -4,12 +4,7 @@
 # You may wish to alter this file to override the set of languages analyzed,
 # or to provide custom queries or build logic.
 #
-# ******** NOTE ********
-# We have attempted to detect the languages in your repository. Please check
-# the `language` matrix defined below to confirm you have the correct set of
-# supported CodeQL languages.
-#
-name: "CodeQL"
+name: "pylint"
 
 on:
   push:
@@ -38,17 +33,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
       
-    # ℹ️ Command-line programs to run using the OS shell.
-    # 📚 https://git.io/JvXDl
-    
-#     - name: Ensure pip, setuptools, and wheel are up to date
-#       shell: bash
-#       run: python3 -m pip install --upgrade pip setuptools wheel 
-      
-#     - name: Install Hurry dependencies
-#       shell: bash
-#       run: python3 -m pip install -r requirements.txt
-
     - name: GitHub Action for pylint
       uses: cclauss/GitHub-Action-for-pylint@0.7.0
 
