@@ -58,6 +58,10 @@ jobs:
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl
+    
+    - name: Ensure pip, setuptools, and wheel are up to date
+      shell: bash
+      run: python3 -m pip install --upgrade pip setuptools wheel 
 
     # ✏️ If the Autobuild fails above, remove it and uncomment the following three lines
     #    and modify them (or add more) to build your code if your project
