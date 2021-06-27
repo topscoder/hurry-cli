@@ -521,8 +521,7 @@ class Hurry():
         logger.info('🍺 HyperOpt run ready... 🥵')
 
 
-    @classmethod
-    def hyperopt_show_results(cls, epoch : int = 0):
+    def hyperopt_show_results(self, epoch : int = 0):
         """Shows the HyperOpt results for given epoch
 
         Usage:
@@ -537,7 +536,7 @@ class Hurry():
 
         logger.info('👉  Showing HyperOpt results for epoch # {epoch}')
 
-        cls.__exec_cmd(f"{cls.config['ft_binary']} hyperopt-show -n {epoch}")
+        self.__exec_cmd(f"{self.config['ft_binary']} hyperopt-show -n {epoch}")
 
 
     def hyperopt_apply_epoch(self, epoch : int = 0, run = 1):
