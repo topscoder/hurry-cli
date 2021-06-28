@@ -10,8 +10,9 @@ Straight out of heaven. Hurry is a CLI tool to speed setting up [MoniGoMani](htt
 * Python 3.8+ is required
 * These Python packages are required by Hurry:
 
+### Install required Python packages using the [PIP package manager](https://pip.pypa.io/en/stable/installing/)
+
 ```shell
-  # Install required Python packages using the [PIP package manager](https://pip.pypa.io/en/stable/installing/)
   pip3 install -r https://raw.githubusercontent.com/topscoder/hurry-cli/master/requirements.txt
 ```
 
@@ -50,7 +51,7 @@ Copy `hurry.fish` to your fish functions folder (`~/.config/fish/functions/hurry
 
 ```shell
 
-  python3 hurry --help
+  $ python3 hurry --help
 
   Usage: python3 hurry [command] [options]
 
@@ -76,7 +77,7 @@ Copy `hurry.fish` to your fish functions folder (`~/.config/fish/functions/hurry
 ### example: hurry setup
 
 ```shell
-~/Projects/ft » hurry setup
+$ hurry setup
  _                                       _  _
 | |__   _   _  _ __  _ __  _   _    ___ | |(_)
 | '_ \ | | | || '__|| '__|| | | |  / __|| || |
