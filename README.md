@@ -116,7 +116,7 @@ INFO:__main__: >> Freqtrade binary: `docker-compose run --rm freqtrade`
 ```shell
 yapf hurry --diff
 yapf hurry > hurry.diff
-yapf hurry > hurry
+yapf -i hurry
 ```
 
 ### Generate pydoc
