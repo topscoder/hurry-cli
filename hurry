@@ -1,19 +1,15 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# -* vim: syntax=python -*-
 
-# /* vim: syntax=python */
-
-"""
+'''
 
 hurry – 💨 Your command is my objective 💨
 
-Timerange examples;
-    Downtrend       20210509-20210524
-    Uptrend         20210127-20210221
-    Sidetrend       20210518-20210610
-    Final           20210425-20210610
 
-"""
+'''
 
+from ctypes import Array
 import glob
 import json
 import coloredlogs, logging
@@ -35,11 +31,11 @@ coloredlogs.install(level=logging.DEBUG, logger=logger)
 
 
 class Hurry():
-    """
+    '''
     💨 Your command is my objective 💨
 
     CLI Tool for setting up a Freqtrade instance containing the MGM strategy
-    """
+    '''
 
     config = []
 
@@ -55,9 +51,13 @@ class Hurry():
         self.__init_freqtrade()
 
 
-    def __init_freqtrade(self):
-        """Initializes the Freqtrade binary
-        """
+    def __init_freqtrade(self) -> bool:
+        '''
+        Initializes the Freqtrade binary
+
+        Returns:
+            bool: True if freqtrade installation is found. False otherwise.
+        '''
 
         if os.path.exists( f"{self._basedir}/.env/bin/freqtrade" ) is False:
             logger.warning('🤷‍♂️ No freqtrade installation found.')
@@ -76,18 +76,16 @@ class Hurry():
         return True
 
 
-    def install_freqtrade(self, branch = "develop", target_dir = os.getcwd()):
-        """Install Freqtrade the easy way.
+    def install_freqtrade(self, branch: str = "develop", target_dir: str = os.getcwd()):
+        '''Install Freqtrade the easy way.
 
-        Usage:
-            hurry install_freqtrade [--branch=develop] [--target_dir=.]
+        Args:
+            branch (string, optional): Checkout a specific branch. Defaults to main.
+            target_dir (string, optional): Specify a target_dir to install to. Defaults to os.getcwd().
 
-        :param branch (string, optional): Checkout a specific branch. Defaults to main.
-        :param target_dir (string, optional): Specify a target_dir to install to. Defaults to current_dir.
-
-        TODO:
-            Check if freqtrade was installed already and warn user it will be overwritten.
-        """
+        Todo:
+            * Check if freqtrade was installed already and warn user it will be overwritten.
+        '''
 
         with tempfile.TemporaryDirectory() as tmpdirname:
             cmd_str = f"git clone -b {branch} https://github.com/freqtrade/freqtrade.git {tmpdirname}"
@@ -98,16 +96,17 @@ class Hurry():
             logger.info('🍺 Freqtrade has been installed. You can now proceed to install MGM. (Hint: hurry install_mgm)')
 
 
-    def install_mgm(self, branch="development", target_dir=os.getcwd()):
-        """Install the MGM strategy.
+    def install_mgm(self, branch: str="development", target_dir: str=os.getcwd()):
+        '''Install the MGM strategy.
 
-        :param branch (str, optional): [description]. Defaults to "development".
-        :param target_dir ([type], optional): [description]. Defaults to os.getcwd().
+        Args:
+            branch (str, optional): Git-branch to install. Defaults to "development".
+            target_dir (str, optional): Target directory to install MGM. Defaults to os.getcwd().
 
-        TODO:
-            Check if MGM was installed already and warn user it will be overwritten.
-            Probably merge mgm-config-private.json into new installation?
-        """
+        Todo:
+            * Check if MGM was installed already and warn user it will be overwritten.
+            * Probably merge mgm-config-private.json into new installation?
+        '''
 
         with tempfile.TemporaryDirectory() as tmpdirname:
             cmd_str = f"git clone -b {branch} https://github.com/Rikj000/MoniGoMani.git {tmpdirname}"
@@ -118,12 +117,9 @@ class Hurry():
 
 
     def setup(self):
-        """
+        '''
         Saves setup data based on your answers
-
-        Usage:
-            hurry setup
-        """
+        '''
         logger.info("🤓 Let's answer some questions to make our lifes easier;")
 
         strategies = map( lambda f :
@@ -263,9 +259,12 @@ class Hurry():
 
 
     def __setup_telegram(self) -> bool:
-        """
+        '''
         Questionnaire to setup Telegram Bot
-        """
+
+        Returns:
+            bool: False if no answers are given, True if all went ok.
+        '''
         questions = [
             {
                 "type": "confirm",
@@ -313,12 +312,13 @@ class Hurry():
         return True
 
 
-    def _save_exchange_credentials(self, cred):
-        """
+    def _save_exchange_credentials(self, cred: Array):
+        '''
         Save exchange credentials to mgm-config-private.json
 
-        :param cred - array [exchange,api_key,api_secret]
-        """
+        Args:
+            cred (Array) - list containing values for [exchange,api_key,api_secret]
+        '''
         file = open(self._basedir+'/user_data/mgm-config-private.json',)
 
         data = json.load(file)
@@ -335,12 +335,13 @@ class Hurry():
         logger.info("🍺 Exchange settings written to mgm-config-private.json")
 
 
-    def _save_telegram_credentials(self, opt):
-        """
+    def _save_telegram_credentials(self, opt: Array):
+        '''
         Save Telegram bot settings
 
-        :param opt - array [enable_telegram,telegram_token,telegram_chat_id]
-        """
+        Args:
+            opt (Array): list containing values for [enable_telegram,telegram_token,telegram_chat_id]
+        '''
         file = open(self._basedir+'/user_data/mgm-config-private.json',)
 
         data = json.load(file)
@@ -358,12 +359,9 @@ class Hurry():
 
 
     def cleanup(self):
-        """
+        '''
         Deletes stored hyperopt config from previous run(s)
-
-        Usage:
-            hurry cleanup
-        """
+        '''
         logger.info('👉 Removing user_data/mgm-config-hyperopt.json')
 
         ho_file = f"{self._basedir}/user_data/mgm-config-hyperopt.json"
@@ -374,15 +372,13 @@ class Hurry():
         logger.info('🍺 HyperOpt config removed.')
 
 
-    def download_candle_data(self, timerange = None):
-        """
+    def download_candle_data(self, timerange: str = None):
+        '''
         Downloads candle data for the given timerange.
 
-        Usage:
-            hurry download_candle_data [--timerange=20210301-20210601]
-
-        :param timerange = "20210301-20210601": timerange from/to in string format (start-end): yyyymmdd-yyyymmdd
-        """
+        Args:
+            timerange (str, Optional): Timerange from/to in string format (start-end): yyyymmdd-yyyymmdd. Defaults to timerange out of .hurry config file.
+        '''
         if timerange is None:
             timerange = self.config['timerange']
 
@@ -437,16 +433,16 @@ class Hurry():
 
         logger.info('🍺 Downloading candle data finished.')
 
-        logger.info('🍺 Downloading candle data finished.')
-
 
     def download_static_pairlist(self):
-        """
-        Downloads static pairlist and saves into mgm_pair_lists folder
+        '''
+        Downloads static pairlist and saves into mgm_pair_lists folder.
 
-        Usage:
-            hurry download_static_pairlist
-        """
+        Fixme:
+            * temporary disabled due to nasty bug
+            && jq 'del(.exchange.pair_whitelist )' ./user_data/mgm-config.json > ./tmp.json && jq -s '.[0] * .[1]' ./tmp.json ./user_data/mgm_pair_lists/$exchange-$hyperopt_quote-Top-Volume-StaticPairList.json > ./user_data/mgm-config.json && rm ./tmp.json && jq '.' ./user_data/mgm-config.json"
+
+        '''
         logger.info('👉 Computing Top Volume Static Pairlist')
 
         target_file = '$basedir/user_data/mgm_pair_lists/$exchange-$hyperopt_quote-Top-Volume-StaticPairList.json'
@@ -458,9 +454,6 @@ class Hurry():
 
         cmd_str = "$ft_binary test-pairlist -c ./user_data/mgm_tools/$exchange-Retrieve-Top-Volume-StaticPairList.json \
             --quote $hyperopt_quote --print-json | tail -n 1 | jq '.| $exchange_placeholder' > $target_file"
-
-        # FIXME temporary disabled due to nasty bug
-        # && jq 'del(.exchange.pair_whitelist )' ./user_data/mgm-config.json > ./tmp.json && jq -s '.[0] * .[1]' ./tmp.json ./user_data/mgm_pair_lists/$exchange-$hyperopt_quote-Top-Volume-StaticPairList.json > ./user_data/mgm-config.json && rm ./tmp.json && jq '.' ./user_data/mgm-config.json"
 
         cmd_str = Template(cmd_str).substitute(
             ft_binary=self.config['ft_binary'],
@@ -484,17 +477,15 @@ class Hurry():
             logger.error("🤷‍♂️ Something happened on the way to heaven 🌟🤦‍♀️")
 
 
-    def hyperopt(self, timerange = None, strategy = None, spaces = None):
-        """
-        HyperOpt Magic. Runs HyperOpt process to find out the most positive settings
+    def hyperopt(self, timerange: str = None, strategy: str = None, spaces: str = None):
+        '''
+        HyperOpt Magic. Runs HyperOpt process to find out the most positive settings.
 
-        Usage:
-            hurry hyperopt [--timerange=20210301-20210601] [--strategy=MoniGoManiHyperStrategy] [--spaces=all]
-
-        :param timerange = None: timerange from/to in format (start-end): yyyymmdd-yyyymmdd
-        :param strategy = None: Hyper Opt strategy to use
-        :param spaces = None: Spaces to optimize for [default, all, buy, sell, roi, stoploss, etc]
-        """
+        Args:
+            timerange (str, Optional): timerange from/to in format (start-end): yyyymmdd-yyyymmdd
+            strategy (str, Optional): Hyper Opt strategy to use. Defaults to MoniGoManiHyperStrategy
+            spaces (str, Optional): Spaces (space delimited) to optimize for [default, all, buy, sell, roi, stoploss, etc]
+        '''
         logger.info('👉 Starting HyperOpt run. Keep calm while your computer burns 🔥')
 
         if timerange is None:
@@ -520,18 +511,14 @@ class Hurry():
 
         logger.info('🍺 HyperOpt run ready... 🥵')
 
-        logger.info('🍺 HyperOpt run ready... 🥵')
 
-
-    def hyperopt_show_results(self, epoch : int = 0):
-        """Shows the HyperOpt results for given epoch
-
-        Usage:
-            hurry hyperopt_show_results --epoch=1337
+    def hyperopt_show_results(self, epoch: int = 0):
+        '''
+        Shows the HyperOpt results for given epoch.
 
         Args:
-            :param epoch = 0: The epoch number to show
-        """
+            epoch (int): The epoch number to show the results from.
+        '''
         if epoch == 0:
             logger.error('🤷‍♂️ Please pass the epoch number through. Hint: hurry hyperopt_show_results --epoch=1337')
             sys.exit(1)
@@ -541,13 +528,13 @@ class Hurry():
         self.__exec_cmd(f"{self.config['ft_binary']} hyperopt-show -n {epoch}")
 
 
-    def hyperopt_apply_epoch(self, epoch : int = 0, run = 1):
-        """Apply HyperOpt results from given epoch
+    def hyperopt_apply_epoch(self, epoch: int = 0, run: int = 1):
+        '''Apply HyperOpt results from given epoch
 
         Args:
-            :param epoch = 0: The epoch number to use
-            :param run = 1: Run number of hyperopt. First run has different command than second +.
-        """
+            epoch (int): The epoch number to apply the results from.
+            run (int, Optional): Defaults to 1. Run number of hyperopt. First run has different command than second.
+        '''
         if epoch == 0:
             logger.error('🤷‍♂️ Please pass the epoch number through. Hint: hurry hyperopt_apply_epoch --epoch=1337')
             sys.exit(1)
@@ -562,13 +549,14 @@ class Hurry():
         logger.info(f'🍺 Hyperopt results of epoch # {epoch} are applied.')
 
 
-    def backtest(self, timerange = None, enable_protections = True):
-        """Run a backtest session
+    def backtest(self, timerange:str = None, enable_protections:bool = True):
+        '''
+        Run a backtest session.
 
         Args:
-            timerange (string, optional): The target timerange for backtesting. Defaults to None.
-            enable_protections (bool, optional): Whether or not to enable protections. Defaults to True.
-        """
+            timerange (string, Optional): The target timerange for backtesting. Defaults to None.
+            enable_protections (bool, Optional): Whether or not to enable protections. Defaults to True.
+        '''
         logger.info('👉 Start backtesting. Lets see how it turns out!')
 
         if timerange is None:
@@ -590,16 +578,13 @@ class Hurry():
         logger.info('🍺 Backtesting ready... 🤑')
 
 
-    def start_trader(self, dry_run = False):
-        """
+    def start_trader(self, dry_run:bool = False):
+        '''
         Start the trader. Your ultimate goal!
 
-        Usage:
-            hurry start_trader --dry_run=False
-
         Args:
-            dry_run (bool, optional): Use dry_run mode. Defaults to False
-        """
+            dry_run (bool, Optional): Use dry_run mode. Defaults to False
+        '''
         cmd = f"{self.config['ft_binary']} trade -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json -c ./user_data/mgm-config-hyperopt.json --strategy {self.config['hyperopt']['strategy']}"
 
         if dry_run is True:
@@ -612,11 +597,16 @@ class Hurry():
 
     @staticmethod
     def __exec_cmd(cmd: str):
-        """Executes shell command and logs output as debug output
+        '''
+        Executes shell command and logs output as debug output.
 
         Args:
             cmd (str): The command, sir
-        """
+        '''
+        if cmd is None or cmd == "":
+            logger.error('🤷‍♂️ Please pass a command through. Without command no objective, sir!')
+            sys.exit(1)
+
         logger.debug(cmd)
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, encoding='utf-8')
         output, err = p.communicate()
@@ -625,11 +615,12 @@ class Hurry():
 
     @staticmethod
     def __read_config():
-        """Reads config values out of .hurry config file
+        '''
+        Reads config values out of .hurry config file.
 
         Returns:
-            array: Array containing all config key/value pairs. Or returns None
-        """
+            array: Array containing all config key/value pairs. Or returns None.
+        '''
         with open(".hurry", "r") as ymlfile:
             cfg = yaml.full_load(ymlfile) or {}
 
@@ -640,12 +631,12 @@ class Hurry():
 
 
     @staticmethod
-    def __write_config(config = None):
-        """Write config-array to .hurry config file. Hooray!
+    def __write_config(config:object = None):
+        '''Write config-array to .hurry config file. Hooray!
 
         Args:
-            config (array, optional): The config values to store. Defaults to None.
-        """
+            config (object, Optional): The config values to store. Defaults to None.
+        '''
         if config is None:
             config = {
                 'config': {
@@ -666,8 +657,6 @@ class Hurry():
             yaml.dump(config, file)
 
         logger.info("🍺 Configuration data written to .hurry file")
-
-
 
 if __name__ == "__main__":
     fire.Fire(Hurry)
