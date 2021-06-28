@@ -18,6 +18,7 @@ import coloredlogs, logging
 import os
 import subprocess
 import sys
+import tempfile
 from operator import add
 from string import Template
 
@@ -73,7 +74,7 @@ class Hurry():
 
 
     def install_freqtrade(self, branch = "develop", target_dir = os.getcwd()):
-        """Install Freqtrade the easy way
+        """Install Freqtrade the easy way.
 
         Usage:
             hurry install_freqtrade [--branch=develop] [--target_dir=.]
@@ -81,37 +82,38 @@ class Hurry():
         :param branch (string, optional): Checkout a specific branch. Defaults to main.
         :param target_dir (string, optional): Specify a target_dir to install to. Defaults to current_dir.
 
-        Todo:
-            check if freqtrade was installed already and warn user it will be overwritten
+        TODO:
+            Check if freqtrade was installed already and warn user it will be overwritten.
         """
 
-        cmd_str = f"git clone -b {branch} https://github.com/freqtrade/freqtrade.git {target_dir}/temp"
-        self.__exec_cmd(cmd_str)
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            cmd_str = f"git clone -b {branch} https://github.com/freqtrade/freqtrade.git {tmpdirname}"
+            self.__exec_cmd(cmd_str)
 
-        self.__exec_cmd(f'cp -rf {target_dir}/temp/* {target_dir}')
-        self.__exec_cmd(f'rm -rf {target_dir}/temp')
-        self.__exec_cmd(f'deactivate; bash {target_dir}/setup.sh --install')
+            self.__exec_cmd(f'cp -rf {tmpdirname}/* {target_dir}')
+            self.__exec_cmd(f'deactivate; bash {target_dir}/setup.sh --install')
 
-        logger.info('🍺 Freqtrade has been installed. You can now proceed to install MGM. (Hint: hurry install_mgm)')
+            logger.info('🍺 Freqtrade has been installed. You can now proceed to install MGM. (Hint: hurry install_mgm)')
 
 
     def install_mgm(self, branch="development", target_dir=os.getcwd()):
-        """Install the MGM strategy
-
-        Usage:
-            hurry install_mgm [--branch=development] [--target_dir=.]
+        """Install the MGM strategy.
 
         :param branch (str, optional): [description]. Defaults to "development".
         :param target_dir ([type], optional): [description]. Defaults to os.getcwd().
+
+        TODO:
+            Check if MGM was installed already and warn user it will be overwritten.
+            Probably merge mgm-config-private.json settings into new installation?
         """
 
-        cmd_str = f"git clone -b {branch} https://github.com/Rikj000/MoniGoMani.git {target_dir}/temp"
-        self.__exec_cmd(cmd_str)
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            cmd_str = f"git clone -b {branch} https://github.com/Rikj000/MoniGoMani.git {tmpdirname}"
+            self.__exec_cmd(cmd_str)
 
-        self.__exec_cmd(f'cp -rf {target_dir}/temp/user_data/* {target_dir}/user_data/')
-        self.__exec_cmd(f'rm -rf {target_dir}/temp')
+            self.__exec_cmd(f'cp -rf {tmpdirname}/* {target_dir}/user_data/')
 
-        logger.info('🍺 MGM has been installed. You can now proceed to setup your instance. (Hint: hurry setup)')
+            logger.info('🍺 MGM has been installed. You can now proceed to setup your instance. (Hint: hurry setup)')
 
 
     def setup(self):
