@@ -2,7 +2,7 @@
 <p align="center">
 <img src="https://user-images.githubusercontent.com/86197446/123507408-6d624900-d669-11eb-9606-4a022bc4a117.png" width="300" height="289" align="center">
 </p>
- 
+
 Straight out of heaven. Hurry is a CLI tool to speed setting up [MoniGoMani](https://github.com/Rikj000/MoniGoMani) HyperStrategy & co. `#freqtrade` `#hyperopting` `#trading` `#strategy`
 
 ## Requirements
@@ -108,3 +108,28 @@ INFO:__main__: >> Freqtrade binary: `docker-compose run --rm freqtrade`
 ? Please enter the chat ID:  1337
  >> Telegram bot settings written to mgm-config-private.json
 ```
+
+## Development
+
+### Yapf formatting
+
+```shell
+yapf hurry --diff
+yapf hurry > hurry.diff
+yapf hurry > hurry
+```
+
+### Generate pydoc
+
+```shell
+python3 -m pydoc -w ./hurry
+```
+
+### Timerange examples
+
+|Trend    |Timerange            |
+|-----    |---------            |
+|Downtrend| `20210509-20210524` |
+|Uptrend  | `20210127-20210221` |
+|Sidetrend| `20210518-20210610` |
+|Final    | `20210425-20210610` |
