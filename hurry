@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # -* vim: syntax=python -*-
-
 '''
 
 hurry – 💨 Your command is my objective 💨
@@ -25,7 +24,8 @@ import yaml
 from art import tprint
 from InquirerPy import prompt
 
-logging.basicConfig(format='= HURRY = %(levelname)s: %(message)s', level=logging.DEBUG)
+logging.basicConfig(format='= HURRY = %(levelname)s: %(message)s',
+                    level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 coloredlogs.install(level=logging.DEBUG, logger=logger)
 
@@ -50,7 +50,6 @@ class Hurry():
 
         self.__init_freqtrade()
 
-
     def __init_freqtrade(self) -> bool:
         '''
         Initializes the Freqtrade binary
@@ -59,7 +58,7 @@ class Hurry():
             bool: True if freqtrade installation is found. False otherwise.
         '''
 
-        if os.path.exists( f"{self._basedir}/.env/bin/freqtrade" ) is False:
+        if os.path.exists(f"{self._basedir}/.env/bin/freqtrade") is False:
             logger.warning('🤷‍♂️ No freqtrade installation found.')
             return False
 
@@ -67,7 +66,8 @@ class Hurry():
             return False
 
         if self.config['install_type'] == "source":
-            self.config['ft_binary'] = f"source {self._basedir}/.env/bin/activate; freqtrade"
+            self.config[
+                'ft_binary'] = f"source {self._basedir}/.env/bin/activate; freqtrade"
         else:
             self.config['ft_binary'] = "docker-compose run --rm freqtrade"
 
@@ -75,8 +75,9 @@ class Hurry():
 
         return True
 
-
-    def install_freqtrade(self, branch: str = "develop", target_dir: str = os.getcwd()):
+    def install_freqtrade(self,
+                          branch: str = "develop",
+                          target_dir: str = os.getcwd()):
         '''Install Freqtrade the easy way.
 
         Args:
@@ -91,12 +92,16 @@ class Hurry():
             cmd_str = f"git clone -b {branch} https://github.com/freqtrade/freqtrade.git {tmpdirname}"
             self.__exec_cmd(cmd_str)
             self.__exec_cmd(f'cp -rf {tmpdirname}/* {target_dir}')
-            self.__exec_cmd(f'deactivate; bash {target_dir}/setup.sh --install')
+            self.__exec_cmd(
+                f'deactivate; bash {target_dir}/setup.sh --install')
 
-            logger.info('🍺 Freqtrade has been installed. You can now proceed to install MGM. (Hint: hurry install_mgm)')
+            logger.info(
+                '🍺 Freqtrade has been installed. You can now proceed to install MGM. (Hint: hurry install_mgm)'
+            )
 
-
-    def install_mgm(self, branch: str="development", target_dir: str=os.getcwd()):
+    def install_mgm(self,
+                    branch: str = "development",
+                    target_dir: str = os.getcwd()):
         '''Install the MGM strategy.
 
         Args:
@@ -111,10 +116,12 @@ class Hurry():
         with tempfile.TemporaryDirectory() as tmpdirname:
             cmd_str = f"git clone -b {branch} https://github.com/Rikj000/MoniGoMani.git {tmpdirname}"
             self.__exec_cmd(cmd_str)
-            self.__exec_cmd(f'cp -rf {tmpdirname}/user_data/* {target_dir}/user_data/')
+            self.__exec_cmd(
+                f'cp -rf {tmpdirname}/user_data/* {target_dir}/user_data/')
 
-            logger.info('🍺 MGM has been installed. You can now proceed to setup your instance. (Hint: hurry setup)')
-
+            logger.info(
+                '🍺 MGM has been installed. You can now proceed to setup your instance. (Hint: hurry setup)'
+            )
 
     def setup(self):
         '''
@@ -122,10 +129,9 @@ class Hurry():
         '''
         logger.info("🤓 Let's answer some questions to make our lifes easier;")
 
-        strategies = map( lambda f :
-                        os.path.basename(f).replace(".py", ""),
-                        glob.glob(self._basedir + "/user_data/strategies/*.py")
-                          )
+        strategies = map(
+            lambda f: os.path.basename(f).replace(".py", ""),
+            glob.glob(self._basedir + "/user_data/strategies/*.py"))
 
         strategies_choices = []
         for s in strategies:
@@ -134,12 +140,12 @@ class Hurry():
         if len(strategies_choices) == 0:
             strat_dir = self._basedir + "/user_data/strategies/"
             logger.error(
-                f"🤷‍♂️ I could not find any strategy in {strat_dir}. Did you install Freqtrade and MGM?")
+                f"🤷‍♂️ I could not find any strategy in {strat_dir}. Did you install Freqtrade and MGM?"
+            )
             sys.exit(1)
 
-        hyperopts = map( lambda f : os.path.basename(f).replace(".py", ""),
-                        glob.glob(self._basedir + "/user_data/hyperopts/*.py")
-                        )
+        hyperopts = map(lambda f: os.path.basename(f).replace(".py", ""),
+                        glob.glob(self._basedir + "/user_data/hyperopts/*.py"))
 
         hyperopts_choices = []
         for s in hyperopts:
@@ -148,81 +154,75 @@ class Hurry():
         if len(hyperopts_choices) == 0:
             ho_dir = self._basedir + "/user_data/hyperopts/"
             logger.error(
-                f"🤷‍♂️ I could not find any hyperopts in {ho_dir}. Did you install Freqtrade and MGM?")
+                f"🤷‍♂️ I could not find any hyperopts in {ho_dir}. Did you install Freqtrade and MGM?"
+            )
             sys.exit(1)
 
-        questions = [
-            {
-                "type": "list",
-                "name": "install_type",
-                "message": "Which way you want to use Freqtrade?",
-                "choices": ["docker", "source"]
-            },
-            {
-                "type": "input",
-                "name": "timerange",
-                "message": "Please enter the default timerange you want to use",
-                "default": "20201201-20210316"
-            },
-            {
-                "type": "list",
-                "name": "ho_strategy",
-                "message": "Which HyperOpt Strategy do you want to use?",
-                "choices": strategies_choices
-            },
-            {
-                "type": "list",
-                "name": "ho_loss",
-                "message": "Which HyperOpt Loss do you want to use?",
-                "choices": hyperopts_choices
-            },
-            {
-                "type": "checkbox",
-                "name": "ho_spaces",
-                "message": "Which spaces do you want to HyperOpt?",
-                "choices": ["default","buy","sell","roi","stoploss","trailing","all"],
-                "filter": lambda val : " ".join(val)
-            },
-            {
-                "type": "input",
-                "name": "ho_quotation",
-                "message": "Please enter the default quotation you want to use",
-                "default": "BTC"
-            },
-            {
-                "type": "input",
-                "name": "ho_epochs",
-                "message": "Please enter the amount of epochs you want to HyperOpt",
-                "default": "800",
-                "filter": lambda val : int(val)
-            },
-
-            {
-                "type": "confirm",
-                "message": "Do you want to also setup your exchange?",
-                "name": "proceed_exchange",
-                "default": True,
-            },
-            {
-                "type": "list",
-                "name": "exchange",
-                "message": "Which exchange do you want to use?",
-                "choices": ["binance", "ftx", "bittrex"],
-                "when": lambda result: result["proceed_exchange"]
-            },
-            {
-                "type": "password",
-                "name": "api_key",
-                "message": "Please enter the exchange API key",
-                "when": lambda result: result["proceed_exchange"]
-            },
-            {
-                "type": "password",
-                "name": "api_secret",
-                "message": "Please enter the exchange API secret: ",
-                "when": lambda result: result["proceed_exchange"]
-            }
-        ]
+        questions = [{
+            "type": "list",
+            "name": "install_type",
+            "message": "Which way you want to use Freqtrade?",
+            "choices": ["docker", "source"]
+        }, {
+            "type": "input",
+            "name": "timerange",
+            "message": "Please enter the default timerange you want to use",
+            "default": "20201201-20210316"
+        }, {
+            "type": "list",
+            "name": "ho_strategy",
+            "message": "Which HyperOpt Strategy do you want to use?",
+            "choices": strategies_choices
+        }, {
+            "type": "list",
+            "name": "ho_loss",
+            "message": "Which HyperOpt Loss do you want to use?",
+            "choices": hyperopts_choices
+        }, {
+            "type":
+            "checkbox",
+            "name":
+            "ho_spaces",
+            "message":
+            "Which spaces do you want to HyperOpt?",
+            "choices":
+            ["default", "buy", "sell", "roi", "stoploss", "trailing", "all"],
+            "filter":
+            lambda val: " ".join(val)
+        }, {
+            "type": "input",
+            "name": "ho_quotation",
+            "message": "Please enter the default quotation you want to use",
+            "default": "BTC"
+        }, {
+            "type": "input",
+            "name": "ho_epochs",
+            "message":
+            "Please enter the amount of epochs you want to HyperOpt",
+            "default": "800",
+            "filter": lambda val: int(val)
+        }, {
+            "type": "confirm",
+            "message": "Do you want to also setup your exchange?",
+            "name": "proceed_exchange",
+            "default": True,
+        }, {
+            "type": "list",
+            "name": "exchange",
+            "message": "Which exchange do you want to use?",
+            "choices": ["binance", "ftx", "bittrex"],
+            "when": lambda result: result["proceed_exchange"]
+        }, {
+            "type": "password",
+            "name": "api_key",
+            "message": "Please enter the exchange API key",
+            "when": lambda result: result["proceed_exchange"]
+        }, {
+            "type": "password",
+            "name": "api_secret",
+            "message": "Please enter the exchange API secret: ",
+            "when": lambda result: result["proceed_exchange"]
+        }]
 
         answers = prompt(questions=questions)
 
@@ -257,7 +257,6 @@ class Hurry():
 
         self.__setup_telegram()
 
-
     def __setup_telegram(self) -> bool:
         '''
         Questionnaire to setup Telegram Bot
@@ -280,18 +279,30 @@ class Hurry():
                 "when": lambda result: result["proceed_telegram"]
             },
             {
-                "type": "password",
-                "name": "telegram_token",
-                "message": "Please enter your Telegram Bot token: ",
-                "default": "",
-                "when": lambda result: result["proceed_telegram"] and result["enable_telegram"]
+                "type":
+                "password",
+                "name":
+                "telegram_token",
+                "message":
+                "Please enter your Telegram Bot token: ",
+                "default":
+                "",
+                "when":
+                lambda result: result["proceed_telegram"] and result[
+                    "enable_telegram"]
             },
             {
-                "type": "input",
-                "name": "telegram_chat_id",
-                "message": "Please enter the chat ID: ",
-                "default": "",
-                "when": lambda result: result["proceed_telegram"] and result["enable_telegram"]
+                "type":
+                "input",
+                "name":
+                "telegram_chat_id",
+                "message":
+                "Please enter the chat ID: ",
+                "default":
+                "",
+                "when":
+                lambda result: result["proceed_telegram"] and result[
+                    "enable_telegram"]
             },
         ]
 
@@ -311,7 +322,6 @@ class Hurry():
 
         return True
 
-
     def _save_exchange_credentials(self, cred: Array):
         '''
         Save exchange credentials to mgm-config-private.json
@@ -319,7 +329,7 @@ class Hurry():
         Args:
             cred (Array) - list containing values for [exchange,api_key,api_secret]
         '''
-        file = open(self._basedir+'/user_data/mgm-config-private.json',)
+        file = open(self._basedir + '/user_data/mgm-config-private.json', )
 
         data = json.load(file)
 
@@ -329,11 +339,11 @@ class Hurry():
             "secret": cred['api_secret']
         }
 
-        with open(self._basedir+'/user_data/mgm-config-private.json', 'w') as outfile:
+        with open(self._basedir + '/user_data/mgm-config-private.json',
+                  'w') as outfile:
             json.dump(data, outfile)
 
         logger.info("🍺 Exchange settings written to mgm-config-private.json")
-
 
     def _save_telegram_credentials(self, opt: Array):
         '''
@@ -342,7 +352,7 @@ class Hurry():
         Args:
             opt (Array): list containing values for [enable_telegram,telegram_token,telegram_chat_id]
         '''
-        file = open(self._basedir+'/user_data/mgm-config-private.json',)
+        file = open(self._basedir + '/user_data/mgm-config-private.json', )
 
         data = json.load(file)
 
@@ -352,11 +362,12 @@ class Hurry():
             "chat_id": opt['telegram_chat_id']
         }
 
-        with open(self._basedir+'/user_data/mgm-config-private.json', 'w') as outfile:
+        with open(self._basedir + '/user_data/mgm-config-private.json',
+                  'w') as outfile:
             json.dump(data, outfile)
 
-        logger.info("🍺 Telegram bot settings written to mgm-config-private.json")
-
+        logger.info(
+            "🍺 Telegram bot settings written to mgm-config-private.json")
 
     def cleanup(self):
         '''
@@ -371,7 +382,6 @@ class Hurry():
 
         logger.info('🍺 HyperOpt config removed.')
 
-
     def download_candle_data(self, timerange: str = None):
         '''
         Downloads candle data for the given timerange.
@@ -382,39 +392,91 @@ class Hurry():
         if timerange is None:
             timerange = self.config['timerange']
 
-        questions = [
-            {
-                'type': 'input',
-                'name': 'timerange',
-                'message': 'Please enter the timerange you want to use',
-                'default': self.config['timerange']
-            },
-            {
-                'type': 'checkbox',
-                'name': 'tickers',
-                'message': 'Specify which tickers to download',
-                'choices': [
-                    {'name': '1m', 'value': '1m'},
-                    {'name': '3m', 'value': '3m'},
-                    {'name': '5m', 'value': '5m'},
-                    {'name': '15m', 'value': '15m'},
-                    {'name': '30m', 'value': '30m'},
-                    {'name': '1h', 'value': '1h'},
-                    {'name': '2h', 'value': '2h'},
-                    {'name': '4h', 'value': '4h'},
-                    {'name': '6h', 'value': '6h'},
-                    {'name': '8h', 'value': '8h'},
-                    {'name': '12h', 'value': '12h'},
-                    {'name': '1d', 'value': '1d'},
-                    {'name': '3d', 'value': '3d'},
-                    {'name': '1w', 'value': '1w'},
-                    {'name': '2w', 'value': '2w'},
-                    {'name': '1M', 'value': '1M'},
-                    {'name': '1y', 'value': '1y'},
-                ],
-                'filter': lambda val : " ".join(val)
-            }
-        ]
+        questions = [{
+            'type': 'input',
+            'name': 'timerange',
+            'message': 'Please enter the timerange you want to use',
+            'default': self.config['timerange']
+        }, {
+            'type':
+            'checkbox',
+            'name':
+            'tickers',
+            'message':
+            'Specify which tickers to download',
+            'choices': [
+                {
+                    'name': '1m',
+                    'value': '1m'
+                },
+                {
+                    'name': '3m',
+                    'value': '3m'
+                },
+                {
+                    'name': '5m',
+                    'value': '5m'
+                },
+                {
+                    'name': '15m',
+                    'value': '15m'
+                },
+                {
+                    'name': '30m',
+                    'value': '30m'
+                },
+                {
+                    'name': '1h',
+                    'value': '1h'
+                },
+                {
+                    'name': '2h',
+                    'value': '2h'
+                },
+                {
+                    'name': '4h',
+                    'value': '4h'
+                },
+                {
+                    'name': '6h',
+                    'value': '6h'
+                },
+                {
+                    'name': '8h',
+                    'value': '8h'
+                },
+                {
+                    'name': '12h',
+                    'value': '12h'
+                },
+                {
+                    'name': '1d',
+                    'value': '1d'
+                },
+                {
+                    'name': '3d',
+                    'value': '3d'
+                },
+                {
+                    'name': '1w',
+                    'value': '1w'
+                },
+                {
+                    'name': '2w',
+                    'value': '2w'
+                },
+                {
+                    'name': '1M',
+                    'value': '1M'
+                },
+                {
+                    'name': '1y',
+                    'value': '1y'
+                },
+            ],
+            'filter':
+            lambda val: " ".join(val)
+        }]
 
         answers = prompt(questions=questions)
 
@@ -424,7 +486,8 @@ class Hurry():
         timerange = answers.get('timerange')
         tickers = answers.get('tickers')
 
-        logger.info(f"👉 Downloading candle data ({tickers}) for timerange {timerange}")
+        logger.info(
+            f"👉 Downloading candle data ({tickers}) for timerange {timerange}")
 
         dcd = f"{self.config['ft_binary']} download-data --timerange {timerange} \
             -t {tickers} -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json"
@@ -432,7 +495,6 @@ class Hurry():
         self.__exec_cmd(dcd)
 
         logger.info('🍺 Downloading candle data finished.')
-
 
     def download_static_pairlist(self):
         '''
@@ -449,8 +511,7 @@ class Hurry():
         target_file = Template(target_file).substitute(
             basedir=self._basedir,
             exchange=self.config['exchange'].title(),
-            hyperopt_quote=self.config['hyperopt']['quote']
-        )
+            hyperopt_quote=self.config['hyperopt']['quote'])
 
         cmd_str = "$ft_binary test-pairlist -c ./user_data/mgm_tools/$exchange-Retrieve-Top-Volume-StaticPairList.json \
             --quote $hyperopt_quote --print-json | tail -n 1 | jq '.| $exchange_placeholder' > $target_file"
@@ -460,8 +521,7 @@ class Hurry():
             exchange=self.config['exchange'].title(),
             hyperopt_quote=self.config['hyperopt']['quote'],
             exchange_placeholder="{exchange: {pair_whitelist: .}}",
-            target_file=target_file
-        )
+            target_file=target_file)
 
         self.__exec_cmd(cmd_str)
 
@@ -476,8 +536,10 @@ class Hurry():
         else:
             logger.error("🤷‍♂️ Something happened on the way to heaven 🌟🤦‍♀️")
 
-
-    def hyperopt(self, timerange: str = None, strategy: str = None, spaces: str = None):
+    def hyperopt(self,
+                 timerange: str = None,
+                 strategy: str = None,
+                 spaces: str = None):
         '''
         HyperOpt Magic. Runs HyperOpt process to find out the most positive settings.
 
@@ -486,7 +548,8 @@ class Hurry():
             strategy (str, Optional): Hyper Opt strategy to use. Defaults to MoniGoManiHyperStrategy
             spaces (str, Optional): Spaces (space delimited) to optimize for [default, all, buy, sell, roi, stoploss, etc]
         '''
-        logger.info('👉 Starting HyperOpt run. Keep calm while your computer burns 🔥')
+        logger.info(
+            '👉 Starting HyperOpt run. Keep calm while your computer burns 🔥')
 
         if timerange is None:
             timerange = self.config['timerange']
@@ -504,13 +567,11 @@ class Hurry():
             ho_loss=self.config['hyperopt']['loss'],
             ho_spaces=spaces,
             ho_epochs=self.config['hyperopt']['epochs'],
-            timerange=timerange
-        )
+            timerange=timerange)
 
         self.__exec_cmd(cmd)
 
         logger.info('🍺 HyperOpt run ready... 🥵')
-
 
     def hyperopt_show_results(self, epoch: int = 0):
         '''
@@ -520,13 +581,14 @@ class Hurry():
             epoch (int): The epoch number to show the results from.
         '''
         if epoch == 0:
-            logger.error('🤷‍♂️ Please pass the epoch number through. Hint: hurry hyperopt_show_results --epoch=1337')
+            logger.error(
+                '🤷‍♂️ Please pass the epoch number through. Hint: hurry hyperopt_show_results --epoch=1337'
+            )
             sys.exit(1)
 
         logger.info('👉  Showing HyperOpt results for epoch # {epoch}')
 
         self.__exec_cmd(f"{self.config['ft_binary']} hyperopt-show -n {epoch}")
-
 
     def hyperopt_apply_epoch(self, epoch: int = 0, run: int = 1):
         '''Apply HyperOpt results from given epoch
@@ -536,20 +598,25 @@ class Hurry():
             run (int, Optional): Defaults to 1. Run number of hyperopt. First run has different command than second.
         '''
         if epoch == 0:
-            logger.error('🤷‍♂️ Please pass the epoch number through. Hint: hurry hyperopt_apply_epoch --epoch=1337')
+            logger.error(
+                '🤷‍♂️ Please pass the epoch number through. Hint: hurry hyperopt_apply_epoch --epoch=1337'
+            )
             sys.exit(1)
 
         logger.info(f'👉 Applying HyperOpt results of epoch # {epoch}')
 
         if run == 1:
-            self.__exec_cmd(f"{self.config['ft_binary']} hyperopt-show -n {epoch} -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json --no-header --print-json | tail -n 1 | jq '.' > ./user_data/mgm-config-hyperopt.json")
+            self.__exec_cmd(
+                f"{self.config['ft_binary']} hyperopt-show -n {epoch} -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json --no-header --print-json | tail -n 1 | jq '.' > ./user_data/mgm-config-hyperopt.json"
+            )
         else:
-            self.__exec_cmd(f"{self.config['ft_binary']} hyperopt-show -n {epoch} -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json --no-header --print-json | tail -n 1 | jq '.' > ./tmp.json && jq -s '.[0] * .[1]' ./user_data/mgm-config-hyperopt.json ./tmp.json > ./tmp2.json && rm ./tmp.json ./user_data/mgm-config-hyperopt.json && mv ./tmp2.json ./user_data/mgm-config-hyperopt.json && jq '.' ./user_data/mgm-config-hyperopt.json")
+            self.__exec_cmd(
+                f"{self.config['ft_binary']} hyperopt-show -n {epoch} -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json --no-header --print-json | tail -n 1 | jq '.' > ./tmp.json && jq -s '.[0] * .[1]' ./user_data/mgm-config-hyperopt.json ./tmp.json > ./tmp2.json && rm ./tmp.json ./user_data/mgm-config-hyperopt.json && mv ./tmp2.json ./user_data/mgm-config-hyperopt.json && jq '.' ./user_data/mgm-config-hyperopt.json"
+            )
 
         logger.info(f'🍺 Hyperopt results of epoch # {epoch} are applied.')
 
-
-    def backtest(self, timerange:str = None, enable_protections:bool = True):
+    def backtest(self, timerange: str = None, enable_protections: bool = True):
         '''
         Run a backtest session.
 
@@ -570,15 +637,13 @@ class Hurry():
         cmd = Template(cmd).substitute(
             ft_binary=self.config['ft_binary'],
             ho_strategy=self.config['hyperopt']['strategy'],
-            timerange=timerange
-        )
+            timerange=timerange)
 
         self.__exec_cmd(cmd)
 
         logger.info('🍺 Backtesting ready... 🤑')
 
-
-    def start_trader(self, dry_run:bool = False):
+    def start_trader(self, dry_run: bool = False):
         '''
         Start the trader. Your ultimate goal!
 
@@ -594,7 +659,6 @@ class Hurry():
 
         self.__exec_cmd(cmd)
 
-
     @staticmethod
     def __exec_cmd(cmd: str):
         '''
@@ -604,14 +668,18 @@ class Hurry():
             cmd (str): The command, sir
         '''
         if cmd is None or cmd == "":
-            logger.error('🤷‍♂️ Please pass a command through. Without command no objective, sir!')
+            logger.error(
+                '🤷‍♂️ Please pass a command through. Without command no objective, sir!'
+            )
             sys.exit(1)
 
         logger.debug(cmd)
-        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, encoding='utf-8')
+        p = subprocess.Popen(cmd,
+                             shell=True,
+                             stdout=subprocess.PIPE,
+                             encoding='utf-8')
         output, err = p.communicate()
         logger.debug(output)
-
 
     @staticmethod
     def __read_config():
@@ -629,9 +697,8 @@ class Hurry():
 
         return None
 
-
     @staticmethod
-    def __write_config(config:object = None):
+    def __write_config(config: object = None):
         '''Write config-array to .hurry config file. Hooray!
 
         Args:
@@ -657,6 +724,7 @@ class Hurry():
             yaml.dump(config, file)
 
         logger.info("🍺 Configuration data written to .hurry file")
+
 
 if __name__ == "__main__":
     fire.Fire(Hurry)
