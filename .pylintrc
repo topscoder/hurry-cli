@@ -193,7 +193,7 @@ never-returning-functions=sys.exit,argparse.parse_error
 
 # The type of string formatting that logging methods do. `old` means using %
 # formatting, `new` is for `{}` formatting.
-logging-format-style=fstr
+logging-format-style=new
 
 # Logging modules to check that the string format arguments are in logging
 # function parameter format.
@@ -339,7 +339,7 @@ indent-after-paren=4
 indent-string='    '
 
 # Maximum number of characters on a single line.
-max-line-length=100
+max-line-length=125
 
 # Maximum number of lines in a module.
 max-module-lines=1000
