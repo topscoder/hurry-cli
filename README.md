@@ -3,37 +3,25 @@
 <img src="https://user-images.githubusercontent.com/86197446/123507408-6d624900-d669-11eb-9606-4a022bc4a117.png" width="300" height="289" align="center">
 </p>
 
-Straight out of heaven. Hurry is a CLI tool to speed setting up [MoniGoMani](https://github.com/Rikj000/MoniGoMani) HyperStrategy & co. `#freqtrade` `#hyperopting` `#trading` `#strategy`
+Straight out of heaven comes Hurry.
+
+Hurry is a CLI tool to speed setting up Freqtrade with [MoniGoMani](https://github.com/Rikj000/MoniGoMani) HyperStrategy & co. Setting it all up requires some knowledge of the entire process, until you found Hurry. You will get up and running (or, trading) in no time!
 
 ## Requirements
 
 * Python 3.8+ is required
-* These Python packages are required by Hurry:
-
-### Install required Python packages using the [PIP package manager](https://pip.pypa.io/en/stable/installing/)
+* Install required Python packages using the [PIP package manager](https://pip.pypa.io/en/stable/installing/):
 
 ```shell
   pip3 install -r https://raw.githubusercontent.com/topscoder/hurry-cli/master/requirements.txt
 ```
 
-## Installation
+## Installation instructions
 
 To install Hurry CLI:
 
 ```shell
   curl "https://raw.githubusercontent.com/topscoder/hurry-cli/master/hurry" --output hurry
-```
-
-(optional) Install [Freqtrade](https://github.com/freqtrade/freqtrade):
-
-```shell
-  python3 hurry install_freqtrade [--branch=develop] [--instal_dir=.]
-```
-
-(optional) Install [MGM Hyper Strategy](https://github.com/Rikj000/MoniGoMani):
-
-```shell
-  python3 hurry install_mgm [--branch=development] [--install_dir=.]
 ```
 
 ### Pro tip
@@ -46,6 +34,28 @@ Add an alias in your shell config (eg. ~/.zshrc) so you can use Hurry as `hurry`
 
 Or, if you use [`fish-shell`](https://fishshell.com) than `hurry.fish` is your friend.
 Copy `hurry.fish` to your fish functions folder (`~/.config/fish/functions/hurry.fish`) and you are ready to roll!
+
+## Quick start
+
+**Hurry up! Time is money**
+
+Hurry includes an interactive wizard which guides you through the entire process of:
+
+* Installing and configuring Freqtrade
+* Installing and configuring MGM
+* Configuring exchange API
+* Configuring Telegram bot API
+* Generating a static pairlist
+* Downloading historic candle data for hyperopting and backtesting
+* Running required hyperopt runs
+* Backtesting your setup
+* And finally start trading!
+
+All you need to do is run:
+
+``` shell
+python3 hurry up
+```
 
 ## Usage
 
@@ -61,6 +71,7 @@ Copy `hurry.fish` to your fish functions folder (`~/.config/fish/functions/hurry
     -h, --help    display help for command
 
   Commands:
+    up
     install_freqtrade       [--branch=develop] [--target_dir=.]
     install_mgm             [--branch=development] [--target_dir=.]
     setup
@@ -74,10 +85,10 @@ Copy `hurry.fish` to your fish functions folder (`~/.config/fish/functions/hurry
 
 ```
 
-### example: hurry setup
+### Examples
 
 ```shell
-$ hurry setup
+$ hurry up
  _                                       _  _
 | |__   _   _  _ __  _ __  _   _    ___ | |(_)
 | '_ \ | | | || '__|| '__|| | | |  / __|| || |
@@ -85,28 +96,19 @@ $ hurry setup
 |_| |_| \__,_||_|   |_|    \__, |  \___||_||_|
                            |___/
 
-INFO:__main__: >> Freqtrade binary: `docker-compose run --rm freqtrade`
- + Let's save some answers to make our lifes easier
+1970-01-01 13:37:00 __main__[7594] DEBUG 👉 Freqtrade binary: `source ./.env/bin/activate; freqtrade`
+1970-01-01 13:37:00 __main__[7594] WARNING 🤷‍♂️ No MGM installation found.
+? 💨 Do you want to install Freqtrade? Yes
+? 💨 Do you want to install MGM? Yes
+? 💨 Do you want to configure it now? Yes
+? 💨 Do you want to download candle data now? Yes
+? 💨 Do you want to generate a static pairlist now? Yes
+? 💨 Do you want to hyperopt now? Yes
+? 💨 Do you want to backtest now? Yes
+? 💨 Do you want to start trading? No
 
-? Which way you want to use Freqtrade? source
-? Please enter the default timerange you want to use 20201201-20210316
-? Which HyperOpt Strategy do you want to use? MoniGoManiHyperStrategy
-? Which HyperOpt Loss do you want to use? WinRatioAndProfitRatioLoss
-? Which spaces do you want to HyperOpt? ['buy', 'sell']
-? Please enter the default quotation you want to use USDT
-? Please enter the amount of epochs you want to HyperOpt 800
-? Do you want to also setup your exchange? Yes
-? Which exchange do you want to use? binance
-? Please enter the exchange API key ****************************************************************
-? Please enter the exchange API secret:  ****************************************************************
- >> Configuration data written to .hurry file
- >> Exchange settings written to mgm-config-private.json
+...
 
-? Do you want to also setup your Telegram bot?  Yes
-? Do you want to enable the Telegram Bot? Yes
-? Please enter your Telegram Bot token:  **********************************************
-? Please enter the chat ID:  1337
- >> Telegram bot settings written to mgm-config-private.json
 ```
 
 ## Development
