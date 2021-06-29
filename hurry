@@ -23,6 +23,7 @@ import fire
 import yaml
 from art import tprint
 from InquirerPy import prompt
+from InquirerPy.validator import NumberValidator
 
 logging.basicConfig(format='= HURRY = %(levelname)s: %(message)s',
                     level=logging.DEBUG)
@@ -42,14 +43,21 @@ class Hurry():
     def __init__(self):
         tprint("hurry cli")
 
-        self.config = None
         self._basedir = os.getcwd()
+
+        self.__reload_config()
+        self.__init_freqtrade()
+        self.__init_mgm()
+
+    def __reload_config(self) -> bool:
+        self.config = None
 
         if os.path.exists(".hurry") is True:
             self.config = self.__read_config()
+            return True
+        else:
+            return False
 
-        self.__init_freqtrade()
-        self.__init_mgm()
 
     def __init_freqtrade(self) -> bool:
         '''
@@ -67,8 +75,7 @@ class Hurry():
             return False
 
         if self.config['install_type'] == "source":
-            self.config[
-                'ft_binary'] = f"source {self._basedir}/.env/bin/activate; freqtrade"
+            self.config['ft_binary'] = f"source {self._basedir}/.env/bin/activate; freqtrade"
         else:
             self.config['ft_binary'] = "docker-compose run --rm freqtrade"
 
@@ -179,12 +186,12 @@ class Hurry():
         if answers.get('do_hyperopt') is True:
             # First HO run
             self.hyperopt()
-            ho_choice = prompt(questions=[{ "type": "input", "name": "ho_epoch", "message": "(HO 1) Choose the epoch which fits the best to your liking: (0-800) ", "filter": lambda val: int(val)}])
+            ho_choice = prompt(questions=[{ "type": "input", "name": "ho_epoch", "message": "(HO 1) Choose the epoch which fits the best to your liking: (0-800) ", "filter": lambda val: int(val), "validate": NumberValidator()}])
             self.hyperopt_apply_epoch(ho_choice.ansers.get('ho_epoch'), 1)
 
             # Second HO run
             self.hyperopt()
-            ho_choice = prompt(questions=[{ "type": "input", "name": "ho_epoch", "message": "(HO 2) Choose the epoch which fits the best to your liking: (0-800) ", "filter": lambda val: int(val)}])
+            ho_choice = prompt(questions=[{ "type": "input", "name": "ho_epoch", "message": "(HO 2) Choose the epoch which fits the best to your liking: (0-800) ", "filter": lambda val: int(val), "validate": NumberValidator()}])
             self.hyperopt_apply_epoch(ho_choice.ansers.get('ho_epoch'), 2)
 
         if answers.get('do_backtest') is True:
@@ -210,6 +217,9 @@ class Hurry():
         Todo:
             * Check if freqtrade was installed already and warn user it will be overwritten.
         '''
+        logger.info('💨 💨 💨')
+        logger.info('👉 Install Freqtrade ')
+        logger.info('💨 💨 💨')
 
         with tempfile.TemporaryDirectory() as tmpdirname:
             cmd_str = f"git clone -b {branch} https://github.com/freqtrade/freqtrade.git {tmpdirname}"
@@ -235,6 +245,9 @@ class Hurry():
             * Check if MGM was installed already and warn user it will be overwritten.
             * Probably merge mgm-config-private.json into new installation?
         '''
+        logger.info('💨 💨 💨')
+        logger.info('👉 Install MGM ')
+        logger.info('💨 💨 💨')
 
         with tempfile.TemporaryDirectory() as tmpdirname:
             cmd_str = f"git clone -b {branch} https://github.com/Rikj000/MoniGoMani.git {tmpdirname}"
@@ -249,8 +262,15 @@ class Hurry():
     def setup(self):
         '''
         Saves setup data based on your answers
+
+        Todo:
+            - Populate default values based on .hurry config
         '''
-        logger.info("🤓 Let's answer some questions to make our lifes easier;")
+        logger.info('💨 💨 💨')
+        logger.info('👉 Setup ')
+        logger.info('💨 💨 💨')
+
+        logger.info("🤓 Let's answer some questions to make our lifes easier.")
 
         strategies = map(
             lambda f: os.path.basename(f).replace(".py", ""),
@@ -276,9 +296,7 @@ class Hurry():
 
         if len(hyperopts_choices) == 0:
             ho_dir = self._basedir + "/user_data/hyperopts/"
-            logger.error(
-                f"🤷‍♂️ I could not find any hyperopts in {ho_dir}. Did you install Freqtrade and MGM?"
-            )
+            logger.error(f"🤷‍♂️ I could not find any hyperopts in {ho_dir}. Did you install Freqtrade and MGM?")
             sys.exit(1)
 
         questions = [{
@@ -368,6 +386,7 @@ class Hurry():
         }
 
         self.__write_config(newconfig)
+        self.__reload_config()
 
         if answers.get('proceed_exchange') is True:
             cred = {
@@ -384,6 +403,10 @@ class Hurry():
         '''
         Deletes stored hyperopt config from previous run(s)
         '''
+        logger.info('💨 💨 💨')
+        logger.info('👉 Cleanup ')
+        logger.info('💨 💨 💨')
+
         logger.info('👉 Removing user_data/mgm-config-hyperopt.json')
 
         ho_file = f"{self._basedir}/user_data/mgm-config-hyperopt.json"
@@ -400,93 +423,119 @@ class Hurry():
         Args:
             timerange (str, Optional): Timerange from/to in string format (start-end): yyyymmdd-yyyymmdd. Defaults to timerange out of .hurry config file.
         '''
+        logger.info('💨 💨 💨')
+        logger.info('👉 Download candle data ')
+        logger.info('💨 💨 💨')
+
+        if self.__reload_config() is False:
+            logger.error('No Hurry config file found. Please run: hurry setup')
+            sys.exit(0)
+
         if timerange is None:
             timerange = self.config['timerange']
+
+        self.__init_freqtrade()
 
         questions = [{
             'type': 'input',
             'name': 'timerange',
-            'message': 'Please enter the timerange you want to use',
-            'default': self.config['timerange']
+            'message': 'Please enter the timerange you want to use: ',
+            'default': timerange
         }, {
-            'type':
-            'checkbox',
-            'name':
-            'tickers',
-            'message':
-            'Specify which tickers to download',
+            'type': 'checkbox',
+            'name': 'tickers',
+            'message': 'Specify which tickers to download: ',
             'choices': [
                 {
                     'name': '1m',
-                    'value': '1m'
+                    'value': '1m',
+                    'enabled': False
                 },
                 {
                     'name': '3m',
-                    'value': '3m'
+                    'value': '3m',
+                    'enabled': False
                 },
                 {
                     'name': '5m',
-                    'value': '5m'
+                    'value': '5m',
+                    'enabled': True
                 },
                 {
                     'name': '15m',
-                    'value': '15m'
+                    'value': '15m',
+                    'enabled': False
                 },
                 {
                     'name': '30m',
-                    'value': '30m'
+                    'value': '30m',
+                    'enabled': False
                 },
                 {
                     'name': '1h',
-                    'value': '1h'
+                    'value': '1h',
+                    'enabled': True
                 },
                 {
                     'name': '2h',
-                    'value': '2h'
+                    'value': '2h',
+                    'enabled': False
                 },
                 {
                     'name': '4h',
-                    'value': '4h'
+                    'value': '4h',
+                    'enabled': False
                 },
                 {
                     'name': '6h',
-                    'value': '6h'
+                    'value': '6h',
+                    'enabled': False
                 },
                 {
                     'name': '8h',
-                    'value': '8h'
+                    'value': '8h',
+                    'enabled': False
                 },
                 {
                     'name': '12h',
-                    'value': '12h'
+                    'value': '12h',
+                    'enabled': False
                 },
                 {
                     'name': '1d',
-                    'value': '1d'
+                    'value': '1d',
+                    'enabled': False
                 },
                 {
                     'name': '3d',
-                    'value': '3d'
+                    'value': '3d',
+                    'enabled': False
                 },
                 {
                     'name': '1w',
-                    'value': '1w'
+                    'value': '1w',
+                    'enabled': False
                 },
                 {
                     'name': '2w',
-                    'value': '2w'
+                    'value': '2w',
+                    'enabled': False
                 },
                 {
                     'name': '1M',
-                    'value': '1M'
+                    'value': '1M',
+                    'enabled': False
                 },
                 {
                     'name': '1y',
-                    'value': '1y'
+                    'value': '1y',
+                    'enabled': False
                 },
             ],
-            'filter':
-            lambda val: " ".join(val)
+            'validate': lambda result: len(result) >= 1,
+            'invalid_message': 'should be at least 1 selection',
+            'instruction': '(select at least 1)',
+            'filter': lambda val: " ".join(val)
         }]
 
         answers = prompt(questions=questions)
@@ -497,8 +546,7 @@ class Hurry():
         timerange = answers.get('timerange')
         tickers = answers.get('tickers')
 
-        logger.info(
-            f"👉 Downloading candle data ({tickers}) for timerange {timerange}")
+        logger.info(f'👉 Downloading candle data ({tickers}) for timerange {timerange}')
 
         dcd = f"{self.config['ft_binary']} download-data --timerange {timerange} \
             -t {tickers} -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json"
@@ -516,7 +564,9 @@ class Hurry():
             && jq 'del(.exchange.pair_whitelist )' ./user_data/mgm-config.json > ./tmp.json && jq -s '.[0] * .[1]' ./tmp.json ./user_data/mgm_pair_lists/$exchange-$hyperopt_quote-Top-Volume-StaticPairList.json > ./user_data/mgm-config.json && rm ./tmp.json && jq '.' ./user_data/mgm-config.json"
 
         '''
+        logger.info('💨 💨 💨')
         logger.info('👉 Computing Top Volume Static Pairlist')
+        logger.info('💨 💨 💨')
 
         target_file = '$basedir/user_data/mgm_pair_lists/$exchange-$hyperopt_quote-Top-Volume-StaticPairList.json'
         target_file = Template(target_file).substitute(
@@ -559,8 +609,9 @@ class Hurry():
             strategy (str, Optional): Hyper Opt strategy to use. Defaults to MoniGoManiHyperStrategy
             spaces (str, Optional): Spaces (space delimited) to optimize for [default, all, buy, sell, roi, stoploss, etc]
         '''
-        logger.info(
-            '👉 Starting HyperOpt run. Keep calm while your computer burns 🔥')
+        logger.info('💨 💨 💨')
+        logger.info('👉 Starting HyperOpt run. Keep calm while your computer burns 🔥')
+        logger.info('💨 💨 💨')
 
         if timerange is None:
             timerange = self.config['timerange']
@@ -591,6 +642,10 @@ class Hurry():
         Args:
             epoch (int): The epoch number to show the results from.
         '''
+        logger.info('💨 💨 💨')
+        logger.info('👉 Hyperopt show results ')
+        logger.info('💨 💨 💨')
+
         if epoch == 0:
             logger.error(
                 '🤷‍♂️ Please pass the epoch number through. Hint: hurry hyperopt_show_results --epoch=1337'
@@ -608,6 +663,10 @@ class Hurry():
             epoch (int): The epoch number to apply the results from.
             run (int, Optional): Defaults to 1. Run number of hyperopt. First run has different command than second.
         '''
+        logger.info('💨 💨 💨')
+        logger.info('👉 Hyperopt apply epoch ')
+        logger.info('💨 💨 💨')
+
         if epoch == 0:
             logger.error(
                 '🤷‍♂️ Please pass the epoch number through. Hint: hurry hyperopt_apply_epoch --epoch=1337'
@@ -635,7 +694,9 @@ class Hurry():
             timerange (string, Optional): The target timerange for backtesting. Defaults to None.
             enable_protections (bool, Optional): Whether or not to enable protections. Defaults to True.
         '''
-        logger.info('👉 Start backtesting. Lets see how it turns out!')
+        logger.info('💨 💨 💨')
+        logger.info('👉 Start backtesting. Lets see how it all turns out!')
+        logger.info('💨 💨 💨')
 
         if timerange is None:
             timerange = self.config['timerange']
@@ -661,12 +722,14 @@ class Hurry():
         Args:
             dry_run (bool, Optional): Use dry_run mode. Defaults to False
         '''
+        logger.info('💨 💨 💨')
+        logger.info('👉 Start trader ')
+        logger.info('💨 💨 💨')
+
         cmd = f"{self.config['ft_binary']} trade -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json -c ./user_data/mgm-config-hyperopt.json --strategy {self.config['hyperopt']['strategy']}"
 
         if dry_run is True:
             cmd = cmd + " --dry-run"
-
-        logger.info('👉 Starting the trade bot. The real deal 🤓')
 
         self.__exec_cmd(cmd)
 
@@ -820,8 +883,7 @@ class Hurry():
 
         return None
 
-    @staticmethod
-    def __write_config(config: object = None):
+    def __write_config(self, config: object = None):
         '''Write config-array to .hurry config file. Hooray!
 
         Args:
@@ -845,6 +907,8 @@ class Hurry():
 
         with open(r'.hurry', 'w') as file:
             yaml.dump(config, file)
+
+        self.__reload_config()
 
         logger.info("🍺 Configuration data written to .hurry file")
 
