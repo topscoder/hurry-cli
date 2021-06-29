@@ -315,7 +315,8 @@ class Hurry():
 
         strategies_choices = []
         for s in strategies:
-            strategies_choices.append({"name": s, "value": s})
+            if s != "MasterMoniGoManiHyperStrategy":
+                strategies_choices.append({"name": s, "value": s})
 
         if len(strategies_choices) == 0:
             strat_dir = self._basedir + "/user_data/strategies/"
@@ -857,7 +858,10 @@ class Hurry():
         '''
         file = open(self._basedir + '/user_data/mgm-config-private.json', 'w+')
 
-        data = json.load(file)
+        try:
+            data = json.load(file)
+        except:
+            data = {}
 
         data['exchange'] = {
             "name": cred['exchange'],
