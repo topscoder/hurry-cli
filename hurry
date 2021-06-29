@@ -610,8 +610,9 @@ class Hurry():
         Downloads static pairlist and saves into mgm_pair_lists folder.
 
         Fixme:
-            * temporary disabled due to nasty bug
+            * Temporary disabled due to nasty bug
             && jq 'del(.exchange.pair_whitelist )' ./user_data/mgm-config.json > ./tmp.json && jq -s '.[0] * .[1]' ./tmp.json ./user_data/mgm_pair_lists/$exchange-$hyperopt_quote-Top-Volume-StaticPairList.json > ./user_data/mgm-config.json && rm ./tmp.json && jq '.' ./user_data/mgm-config.json"
+            * Catch errors
 
         '''
         logger.info('💨 💨 💨')
@@ -636,16 +637,21 @@ class Hurry():
 
         self.__exec_cmd(cmd_str)
 
-        logger.info(" >>>>>>>>>>>>>>>>>>>>>>>>>")
-        logger.info(" 🍺 Don't forget to copy this pairlist to your own ")
-        logger.info(" 🍺 mgm-config.json file to start using it!")
-        logger.info(" <<<<<<<<<<<<<<<<<<<<<<<<<")
+        logger.info(" 🍺 Writing pairlist to mgm-config.json... ")
 
-        if os.path.exists(target_file):
-            with open(target_file, 'r') as reader:
-                print(reader.read())
-        else:
-            logger.error("🤷‍♂️ Something happened on the way to heaven 🌟🤦‍♀️")
+        # Copy static pairlist to mgm-config.json as pair whitelist
+        df = open(self._basedir + '/user_data/mgm_pair_lists/Binance-USDT-Top-Volume-StaticPairList.json',)
+        mgm_config_json = json.load(df)
+
+        mc = open(self._basedir + '/user_data/mgm-config.json',)
+        mgm_config_data = json.load(mc)
+
+        mgm_config_data['exchange']['pair_whitelist'] = mgm_config_json['exchange']['pair_whitelist']
+
+        with open(self._basedir + '/user_data/mgm-config.json', 'w') as target_f:
+            json.dump(mgm_config_data, target_f, indent=4)
+
+        # logger.error("🤷‍♂️ Something happened on the way to heaven 🌟🤦‍♀️")
 
     def hyperopt(self,
                  timerange: str = None,
@@ -849,12 +855,12 @@ class Hurry():
 
         return True
 
-    def _save_exchange_credentials(self, cred: Array):
+    def _save_exchange_credentials(self, cred: dict):
         '''
         Save exchange credentials to mgm-config-private.json
 
         Args:
-            cred (Array) - list containing values for [exchange,api_key,api_secret]
+            cred (dict) - list containing values for [exchange,api_key,api_secret]
         '''
         file = open(self._basedir + '/user_data/mgm-config-private.json', 'w+')
 
@@ -875,12 +881,12 @@ class Hurry():
 
         logger.info("🍺 Exchange settings written to mgm-config-private.json")
 
-    def _save_telegram_credentials(self, opt: Array):
+    def _save_telegram_credentials(self, opt: dict):
         '''
         Save Telegram bot settings
 
         Args:
-            opt (Array): list containing values for [enable_telegram,telegram_token,telegram_chat_id]
+            opt (dict): list containing values for [enable_telegram,telegram_token,telegram_chat_id]
         '''
         file = open(self._basedir + '/user_data/mgm-config-private.json', )
 
@@ -937,7 +943,7 @@ class Hurry():
 
         return None
 
-    def __write_config(self, config: object = None):
+    def __write_config(self, config: dict = None):
         '''Write config-array to .hurry config file. Hooray!
 
         Args:
