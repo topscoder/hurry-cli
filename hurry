@@ -850,4 +850,8 @@ class Hurry():
 
 
 if __name__ == "__main__":
-    fire.Fire(Hurry)
+    try:
+        fire.Fire(Hurry)
+    except KeyboardInterrupt:
+        print('😼 KTHXBAI')
+        sys.exit(0)
