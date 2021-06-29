@@ -177,13 +177,15 @@ class Hurry():
             self.download_static_pairlist()
 
         if answers.get('do_hyperopt') is True:
+            # First HO run
             self.hyperopt()
+            ho_choice = prompt(questions=[{ "type": "input", "name": "ho_epoch", "message": "(HO 1) Choose the epoch which fits the best to your liking: (0-800) ", "filter": lambda val: int(val)}])
+            self.hyperopt_apply_epoch(ho_choice.ansers.get('ho_epoch'), 1)
 
-            ho_choice = prompt(questions=[{ "type": "input", "name": "ho_epoch", "message": "Choose the epoch which fits the best to your liking: (0-800) ", "filter": lambda val: int(val)}])
-            self.hyperopt_apply_epoch(ho_choice.ansers.get('ho_epoch'))
-
-        # TODO
-        # - second ho run?
+            # Second HO run
+            self.hyperopt()
+            ho_choice = prompt(questions=[{ "type": "input", "name": "ho_epoch", "message": "(HO 2) Choose the epoch which fits the best to your liking: (0-800) ", "filter": lambda val: int(val)}])
+            self.hyperopt_apply_epoch(ho_choice.ansers.get('ho_epoch'), 2)
 
         if answers.get('do_backtest') is True:
             self.backtest()
