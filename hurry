@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # -* vim: syntax=python -*-
-
 '''
 
 hurry – 💨 Your command is my objective 💨
@@ -58,7 +57,6 @@ class Hurry():
         else:
             return False
 
-
     def __init_freqtrade(self) -> bool:
         '''
         Initializes the Freqtrade binary
@@ -75,7 +73,8 @@ class Hurry():
             return False
 
         if self.config['install_type'] == "source":
-            self.config['ft_binary'] = f"source {self._basedir}/.env/bin/activate; freqtrade"
+            self.config[
+                'ft_binary'] = f"source {self._basedir}/.env/bin/activate; freqtrade"
         else:
             self.config['ft_binary'] = "docker-compose run --rm freqtrade"
 
@@ -91,11 +90,14 @@ class Hurry():
             bool: True if MGM config and strategy file is found. False otherwise.
         '''
 
-        if os.path.exists(f"{self._basedir}/user_data/mgm-config.json") is False:
+        if os.path.exists(
+                f"{self._basedir}/user_data/mgm-config.json") is False:
             logger.warning('🤷‍♂️ No MGM installation found.')
             return False
 
-        if os.path.exists(f"{self._basedir}/user_data/strategies/MoniGoManiHyperStrategy.py") is False:
+        if os.path.exists(
+                f"{self._basedir}/user_data/strategies/MoniGoManiHyperStrategy.py"
+        ) is False:
             logger.warning('🤷‍♂️ No MGM installation found.')
             return False
 
@@ -143,23 +145,22 @@ class Hurry():
                 "message": "💨 Do you want to backtest now?"
             },
             {
-                "type": "list",
-                "name": "start_trading",
-                "message": "💨 Do you want to start trading?",
-                "choices": [
-                    {
-                        "name": "No",
-                        "value": 0
-                    },
-                    {
-                        "name": "Yes, Dry-Run please",
-                        "value": 1
-                    },
-                    {
-                        "name": "Yes, for real!",
-                        "value": 2
-                    }
-                ]
+                "type":
+                "list",
+                "name":
+                "start_trading",
+                "message":
+                "💨 Do you want to start trading?",
+                "choices": [{
+                    "name": "No",
+                    "value": 0
+                }, {
+                    "name": "Yes, Dry-Run please",
+                    "value": 1
+                }, {
+                    "name": "Yes, for real!",
+                    "value": 2
+                }]
             },
         ]
 
@@ -186,19 +187,33 @@ class Hurry():
         if answers.get('do_hyperopt') is True:
             # First HO run
             self.hyperopt()
-            ho_choice = prompt(questions=[{ "type": "input", "name": "ho_epoch", "message": "(HO 1) Choose the epoch which fits the best to your liking: (0-800) ", "filter": lambda val: int(val), "validate": NumberValidator()}])
+            ho_choice = prompt(questions=[{
+                "type": "input",
+                "name": "ho_epoch",
+                "message":
+                "(HO 1) Choose the epoch which fits the best to your liking: (0-800) ",
+                "filter": lambda val: int(val),
+                "validate": NumberValidator()
+            }])
             self.hyperopt_apply_epoch(ho_choice.ansers.get('ho_epoch'), 1)
 
             # Second HO run
             self.hyperopt()
-            ho_choice = prompt(questions=[{ "type": "input", "name": "ho_epoch", "message": "(HO 2) Choose the epoch which fits the best to your liking: (0-800) ", "filter": lambda val: int(val), "validate": NumberValidator()}])
+            ho_choice = prompt(questions=[{
+                "type": "input",
+                "name": "ho_epoch",
+                "message":
+                "(HO 2) Choose the epoch which fits the best to your liking: (0-800) ",
+                "filter": lambda val: int(val),
+                "validate": NumberValidator()
+            }])
             self.hyperopt_apply_epoch(ho_choice.ansers.get('ho_epoch'), 2)
 
         if answers.get('do_backtest') is True:
             self.backtest()
 
         if answers.get('start_trading') > 0:
-            if ( answers.get('start_trading') == 2 ):
+            if answers.get('start_trading') == 2:
                 self.start_trader(False)
             else:
                 self.start_trader(True)
@@ -296,7 +311,9 @@ class Hurry():
 
         if len(hyperopts_choices) == 0:
             ho_dir = self._basedir + "/user_data/hyperopts/"
-            logger.error(f"🤷‍♂️ I could not find any hyperopts in {ho_dir}. Did you install Freqtrade and MGM?")
+            logger.error(
+                f"🤷‍♂️ I could not find any hyperopts in {ho_dir}. Did you install Freqtrade and MGM?"
+            )
             sys.exit(1)
 
         questions = [{
@@ -442,9 +459,12 @@ class Hurry():
             'message': 'Please enter the timerange you want to use: ',
             'default': timerange
         }, {
-            'type': 'checkbox',
-            'name': 'tickers',
-            'message': 'Specify which tickers to download: ',
+            'type':
+            'checkbox',
+            'name':
+            'tickers',
+            'message':
+            'Specify which tickers to download: ',
             'choices': [
                 {
                     'name': '1m',
@@ -532,10 +552,14 @@ class Hurry():
                     'enabled': False
                 },
             ],
-            'validate': lambda result: len(result) >= 1,
-            'invalid_message': 'should be at least 1 selection',
-            'instruction': '(select at least 1)',
-            'filter': lambda val: " ".join(val)
+            'validate':
+            lambda result: len(result) >= 1,
+            'invalid_message':
+            'should be at least 1 selection',
+            'instruction':
+            '(select at least 1)',
+            'filter':
+            lambda val: " ".join(val)
         }]
 
         answers = prompt(questions=questions)
@@ -546,7 +570,8 @@ class Hurry():
         timerange = answers.get('timerange')
         tickers = answers.get('tickers')
 
-        logger.info(f'👉 Downloading candle data ({tickers}) for timerange {timerange}')
+        logger.info(
+            f'👉 Downloading candle data ({tickers}) for timerange {timerange}')
 
         dcd = f"{self.config['ft_binary']} download-data --timerange {timerange} \
             -t {tickers} -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json"
@@ -610,7 +635,8 @@ class Hurry():
             spaces (str, Optional): Spaces (space delimited) to optimize for [default, all, buy, sell, roi, stoploss, etc]
         '''
         logger.info('💨 💨 💨')
-        logger.info('👉 Starting HyperOpt run. Keep calm while your computer burns 🔥')
+        logger.info(
+            '👉 Starting HyperOpt run. Keep calm while your computer burns 🔥')
         logger.info('💨 💨 💨')
 
         if timerange is None:
