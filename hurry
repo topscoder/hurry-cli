@@ -277,7 +277,7 @@ class Hurry():
                 '🍺 MGM has been installed. You can now proceed to setup your instance. (Hint: hurry setup)'
             )
 
-    def __create_mgm_config_files(target_dir: str):
+    def __create_mgm_config_files(self, target_dir: str):
         '''
         Copy example files as def files.
 
@@ -285,10 +285,14 @@ class Hurry():
             target_dir (string): The target dir where the mgm-config.example.json exists.
         '''
         if os.path.exists(f'{target_dir}/user_data/mgm-config.json') is False:
-            shutil.copyfile(f'{target_dir}/user_data/mgm-config.example.json', f'{target_dir}/user_data/mgm-config.json')
+            shutil.copyfile(f'{target_dir}/user_data/mgm-config.example.json',
+                            f'{target_dir}/user_data/mgm-config.json')
 
-        if os.path.exists(f'{target_dir}/user_data/mgm-config-private.json') is False:
-            shutil.copyfile(f'{target_dir}/user_data/mgm-config-private.example.json', f'{target_dir}/user_data/mgm-config-private.json')
+        if os.path.exists(
+                f'{target_dir}/user_data/mgm-config-private.json') is False:
+            shutil.copyfile(
+                f'{target_dir}/user_data/mgm-config-private.example.json',
+                f'{target_dir}/user_data/mgm-config-private.json')
 
         logger.warning(f'{target_dir}/user_data/mgm-config.json')
 
