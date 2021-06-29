@@ -7,7 +7,6 @@ hurry – 💨 Your command is my objective 💨
 
 '''
 
-from ctypes import Array
 import glob
 import json
 import coloredlogs, logging
@@ -938,7 +937,7 @@ class Hurry():
         Reads config values out of .hurry config file.
 
         Returns:
-            array: Array containing all config key/value pairs. Or returns None.
+            config (dict): Dictionary containing all config key/value pairs. Or returns None.
         '''
         with open(".hurry", "r") as ymlfile:
             cfg = yaml.full_load(ymlfile) or {}
