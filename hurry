@@ -75,6 +75,36 @@ class Hurry():
 
         return True
 
+    def up(self):
+        '''The all in one command'''
+        # install_freqtrade
+            # yes
+                # install? overwrite? skip?
+            # no
+        # install_mgm
+            # yes
+                #install? overwrite? skip?
+            # no
+        # setup
+            # yes
+                # overwrite? update? skip?
+            # no
+        # download candle data
+            # yes
+            # no
+        # download static_pairlist
+            # yes
+            # no
+        # hyperopt (1)
+            # yes
+                # hyperopt (2)
+                    # yes
+        # show epoch
+        # apply epoch
+        # backtest
+        # start trader
+        #   # dry_run?
+
     def install_freqtrade(self,
                           branch: str = "develop",
                           target_dir: str = os.getcwd()):
