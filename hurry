@@ -12,6 +12,7 @@ import glob
 import json
 import coloredlogs, logging
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -270,9 +271,26 @@ class Hurry():
             self.__exec_cmd(
                 f'cp -rf {tmpdirname}/user_data/* {target_dir}/user_data/')
 
+            self.__create_mgm_config_files(target_dir)
+
             logger.info(
                 '🍺 MGM has been installed. You can now proceed to setup your instance. (Hint: hurry setup)'
             )
+
+    def __create_mgm_config_files(target_dir: str):
+        '''
+        Copy example files as def files.
+
+        Args:
+            target_dir (string): The target dir where the mgm-config.example.json exists.
+        '''
+        if os.path.exists(f'{target_dir}/user_data/mgm-config.json') is False:
+            shutil.copyfile(f'{target_dir}/user_data/mgm-config.example.json', f'{target_dir}/user_data/mgm-config.json')
+
+        if os.path.exists(f'{target_dir}/user_data/mgm-config-private.json') is False:
+            shutil.copyfile(f'{target_dir}/user_data/mgm-config-private.example.json', f'{target_dir}/user_data/mgm-config-private.json')
+
+        logger.warning(f'{target_dir}/user_data/mgm-config.json')
 
     def setup(self):
         '''
@@ -301,6 +319,8 @@ class Hurry():
                 f"🤷‍♂️ I could not find any strategy in {strat_dir}. Did you install Freqtrade and MGM?"
             )
             sys.exit(1)
+
+        self.__create_mgm_config_files(self._basedir)
 
         hyperopts = map(lambda f: os.path.basename(f).replace(".py", ""),
                         glob.glob(self._basedir + "/user_data/hyperopts/*.py"))
@@ -831,7 +851,7 @@ class Hurry():
         Args:
             cred (Array) - list containing values for [exchange,api_key,api_secret]
         '''
-        file = open(self._basedir + '/user_data/mgm-config-private.json', )
+        file = open(self._basedir + '/user_data/mgm-config-private.json', 'w+')
 
         data = json.load(file)
 
@@ -842,7 +862,7 @@ class Hurry():
         }
 
         with open(self._basedir + '/user_data/mgm-config-private.json',
-                  'w') as outfile:
+                  'w+') as outfile:
             json.dump(data, outfile)
 
         logger.info("🍺 Exchange settings written to mgm-config-private.json")
