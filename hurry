@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # -* vim: syntax=python -*-
+
 '''
 
 hurry – 💨 Your command is my objective 💨
-
 
 '''
 
@@ -77,33 +77,103 @@ class Hurry():
 
     def up(self):
         '''The all in one command'''
-        # install_freqtrade
-            # yes
-                # install? overwrite? skip?
-            # no
-        # install_mgm
-            # yes
-                #install? overwrite? skip?
-            # no
-        # setup
-            # yes
-                # overwrite? update? skip?
-            # no
-        # download candle data
-            # yes
-            # no
-        # download static_pairlist
-            # yes
-            # no
-        # hyperopt (1)
-            # yes
-                # hyperopt (2)
-                    # yes
-        # show epoch
-        # apply epoch
-        # backtest
-        # start trader
-        #   # dry_run?
+
+        questions = [
+            {
+                "type": "confirm",
+                "name": "install_freqtrade",
+                "message": "💨 Do you want to install Freqtrade?"
+            },
+            {
+                "type": "confirm",
+                "name": "install_mgm",
+                "message": "💨 Do you want to install MGM?"
+            },
+            {
+                "type": "confirm",
+                "name": "run_setup",
+                "message": "💨 Do you want to configure it now?"
+            },
+            {
+                "type": "confirm",
+                "name": "download_data",
+                "message": "💨 Do you want to download candle data now?"
+            },
+            {
+                "type": "confirm",
+                "name": "download_static_pairlist",
+                "message": "💨 Do you want to generate a static pairlist now?"
+            },
+            {
+                "type": "confirm",
+                "name": "do_hyperopt",
+                "message": "💨 Do you want to hyperopt now?"
+            },
+            {
+                "type": "confirm",
+                "name": "do_backtest",
+                "message": "💨 Do you want to backtest now?"
+            },
+            {
+                "type": "list",
+                "name": "start_trading",
+                "message": "💨 Do you want to start trading?",
+                "choices": [
+                    {
+                        "name": "No",
+                        "value": 0
+                    },
+                    {
+                        "name": "Yes, Dry-Run please",
+                        "value": 1
+                    },
+                    {
+                        "name": "Yes, for real!",
+                        "value": 2
+                    }
+                ]
+            },
+        ]
+
+        answers = prompt(questions=questions)
+
+        if answers == {}:
+            sys.exit()
+
+        if answers.get('install_freqtrade') is True:
+            self.install_freqtrade()
+
+        if answers.get('install_mgm') is True:
+            self.install_mgm()
+
+        if answers.get('run_setup') is True:
+            self.setup()
+
+        if answers.get('download_data') is True:
+            self.download_candle_data()
+
+        if answers.get('download_static_pairlist') is True:
+            self.download_static_pairlist()
+
+        if answers.get('do_hyperopt') is True:
+            self.hyperopt()
+
+            ho_choice = prompt(questions=[{ "type": "input", "name": "ho_epoch", "message": "Choose the epoch which fits the best to your liking: (0-800) ", "filter": lambda val: int(val)}])
+            self.hyperopt_apply_epoch(ho_choice.ansers.get('ho_epoch'))
+
+        # TODO
+        # - second ho run?
+
+        if answers.get('do_backtest') is True:
+            self.backtest()
+
+        if answers.get('start_trading') > 0:
+            if ( answers.get('start_trading') == 2 ):
+                self.start_trader(False)
+            else:
+                self.start_trader(True)
+        else:
+            logger.info('💨 Executing hurry up finished.')
 
     def install_freqtrade(self,
                           branch: str = "develop",
@@ -286,118 +356,6 @@ class Hurry():
             self._save_exchange_credentials(cred)
 
         self.__setup_telegram()
-
-    def __setup_telegram(self) -> bool:
-        '''
-        Questionnaire to setup Telegram Bot
-
-        Returns:
-            bool: False if no answers are given, True if all went ok.
-        '''
-        questions = [
-            {
-                "type": "confirm",
-                "message": "Do you want to also setup your Telegram bot? ",
-                "name": "proceed_telegram",
-                "default": True,
-            },
-            {
-                "type": "confirm",
-                "message": "Do you want to enable the Telegram Bot?",
-                "name": "enable_telegram",
-                "default": True,
-                "when": lambda result: result["proceed_telegram"]
-            },
-            {
-                "type":
-                "password",
-                "name":
-                "telegram_token",
-                "message":
-                "Please enter your Telegram Bot token: ",
-                "default":
-                "",
-                "when":
-                lambda result: result["proceed_telegram"] and result[
-                    "enable_telegram"]
-            },
-            {
-                "type":
-                "input",
-                "name":
-                "telegram_chat_id",
-                "message":
-                "Please enter the chat ID: ",
-                "default":
-                "",
-                "when":
-                lambda result: result["proceed_telegram"] and result[
-                    "enable_telegram"]
-            },
-        ]
-
-        answers = prompt(questions=questions)
-
-        if answers == {}:
-            return False
-
-        if answers.get('proceed_telegram') is True:
-            opt = {
-                'enable_telegram': answers.get('enable_telegram'),
-                'telegram_token': answers.get('telegram_token'),
-                'telegram_chat_id': answers.get('telegram_chat_id')
-            }
-
-            self._save_telegram_credentials(opt)
-
-        return True
-
-    def _save_exchange_credentials(self, cred: Array):
-        '''
-        Save exchange credentials to mgm-config-private.json
-
-        Args:
-            cred (Array) - list containing values for [exchange,api_key,api_secret]
-        '''
-        file = open(self._basedir + '/user_data/mgm-config-private.json', )
-
-        data = json.load(file)
-
-        data['exchange'] = {
-            "name": cred['exchange'],
-            "key": cred['api_key'],
-            "secret": cred['api_secret']
-        }
-
-        with open(self._basedir + '/user_data/mgm-config-private.json',
-                  'w') as outfile:
-            json.dump(data, outfile)
-
-        logger.info("🍺 Exchange settings written to mgm-config-private.json")
-
-    def _save_telegram_credentials(self, opt: Array):
-        '''
-        Save Telegram bot settings
-
-        Args:
-            opt (Array): list containing values for [enable_telegram,telegram_token,telegram_chat_id]
-        '''
-        file = open(self._basedir + '/user_data/mgm-config-private.json', )
-
-        data = json.load(file)
-
-        data['telegram'] = {
-            "enabled": opt['enable_telegram'],
-            "token": opt['telegram_token'],
-            "chat_id": opt['telegram_chat_id']
-        }
-
-        with open(self._basedir + '/user_data/mgm-config-private.json',
-                  'w') as outfile:
-            json.dump(data, outfile)
-
-        logger.info(
-            "🍺 Telegram bot settings written to mgm-config-private.json")
 
     def cleanup(self):
         '''
@@ -688,6 +646,118 @@ class Hurry():
         logger.info('👉 Starting the trade bot. The real deal 🤓')
 
         self.__exec_cmd(cmd)
+
+    def __setup_telegram(self) -> bool:
+        '''
+        Questionnaire to setup Telegram Bot
+
+        Returns:
+            bool: False if no answers are given, True if all went ok.
+        '''
+        questions = [
+            {
+                "type": "confirm",
+                "message": "Do you want to also setup your Telegram bot? ",
+                "name": "proceed_telegram",
+                "default": True,
+            },
+            {
+                "type": "confirm",
+                "message": "Do you want to enable the Telegram Bot?",
+                "name": "enable_telegram",
+                "default": True,
+                "when": lambda result: result["proceed_telegram"]
+            },
+            {
+                "type":
+                "password",
+                "name":
+                "telegram_token",
+                "message":
+                "Please enter your Telegram Bot token: ",
+                "default":
+                "",
+                "when":
+                lambda result: result["proceed_telegram"] and result[
+                    "enable_telegram"]
+            },
+            {
+                "type":
+                "input",
+                "name":
+                "telegram_chat_id",
+                "message":
+                "Please enter the chat ID: ",
+                "default":
+                "",
+                "when":
+                lambda result: result["proceed_telegram"] and result[
+                    "enable_telegram"]
+            },
+        ]
+
+        answers = prompt(questions=questions)
+
+        if answers == {}:
+            return False
+
+        if answers.get('proceed_telegram') is True:
+            opt = {
+                'enable_telegram': answers.get('enable_telegram'),
+                'telegram_token': answers.get('telegram_token'),
+                'telegram_chat_id': answers.get('telegram_chat_id')
+            }
+
+            self._save_telegram_credentials(opt)
+
+        return True
+
+    def _save_exchange_credentials(self, cred: Array):
+        '''
+        Save exchange credentials to mgm-config-private.json
+
+        Args:
+            cred (Array) - list containing values for [exchange,api_key,api_secret]
+        '''
+        file = open(self._basedir + '/user_data/mgm-config-private.json', )
+
+        data = json.load(file)
+
+        data['exchange'] = {
+            "name": cred['exchange'],
+            "key": cred['api_key'],
+            "secret": cred['api_secret']
+        }
+
+        with open(self._basedir + '/user_data/mgm-config-private.json',
+                  'w') as outfile:
+            json.dump(data, outfile)
+
+        logger.info("🍺 Exchange settings written to mgm-config-private.json")
+
+    def _save_telegram_credentials(self, opt: Array):
+        '''
+        Save Telegram bot settings
+
+        Args:
+            opt (Array): list containing values for [enable_telegram,telegram_token,telegram_chat_id]
+        '''
+        file = open(self._basedir + '/user_data/mgm-config-private.json', )
+
+        data = json.load(file)
+
+        data['telegram'] = {
+            "enabled": opt['enable_telegram'],
+            "token": opt['telegram_token'],
+            "chat_id": opt['telegram_chat_id']
+        }
+
+        with open(self._basedir + '/user_data/mgm-config-private.json',
+                  'w') as outfile:
+            json.dump(data, outfile)
+
+        logger.info(
+            "🍺 Telegram bot settings written to mgm-config-private.json")
 
     @staticmethod
     def __exec_cmd(cmd: str):
