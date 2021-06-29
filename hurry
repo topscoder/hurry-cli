@@ -49,6 +49,7 @@ class Hurry():
             self.config = self.__read_config()
 
         self.__init_freqtrade()
+        self.__init_mgm()
 
     def __init_freqtrade(self) -> bool:
         '''
@@ -75,8 +76,28 @@ class Hurry():
 
         return True
 
+    def __init_mgm(self) -> bool:
+        '''
+        Checks if MGM exists
+
+        Returns:
+            bool: True if MGM config and strategy file is found. False otherwise.
+        '''
+
+        if os.path.exists(f"{self._basedir}/user_data/mgm-config.json") is False:
+            logger.warning('🤷‍♂️ No MGM installation found.')
+            return False
+
+        if os.path.exists(f"{self._basedir}/user_data/strategies/MoniGoManiHyperStrategy.py") is False:
+            logger.warning('🤷‍♂️ No MGM installation found.')
+            return False
+
+        logger.debug('👉 MGM strategy and config found √')
+
+        return True
+
     def up(self):
-        '''The all in one command'''
+        '''The all in one command. Hurry up, turn it up!'''
 
         questions = [
             {
