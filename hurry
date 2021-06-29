@@ -640,15 +640,20 @@ class Hurry():
         logger.info(" 🍺 Writing pairlist to mgm-config.json... ")
 
         # Copy static pairlist to mgm-config.json as pair whitelist
-        df = open(self._basedir + '/user_data/mgm_pair_lists/Binance-USDT-Top-Volume-StaticPairList.json',)
+        df = open(
+            self._basedir +
+            '/user_data/mgm_pair_lists/Binance-USDT-Top-Volume-StaticPairList.json',
+        )
         mgm_config_json = json.load(df)
 
-        mc = open(self._basedir + '/user_data/mgm-config.json',)
+        mc = open(self._basedir + '/user_data/mgm-config.json', )
         mgm_config_data = json.load(mc)
 
-        mgm_config_data['exchange']['pair_whitelist'] = mgm_config_json['exchange']['pair_whitelist']
+        mgm_config_data['exchange']['pair_whitelist'] = mgm_config_json[
+            'exchange']['pair_whitelist']
 
-        with open(self._basedir + '/user_data/mgm-config.json', 'w') as target_f:
+        with open(self._basedir + '/user_data/mgm-config.json',
+                  'w') as target_f:
             json.dump(mgm_config_data, target_f, indent=4)
 
         # logger.error("🤷‍♂️ Something happened on the way to heaven 🌟🤦‍♀️")
