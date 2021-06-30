@@ -911,7 +911,7 @@ class Hurry():
 
         with open(self._basedir + '/user_data/mgm-config-private.json',
                   'w+') as outfile:
-            json.dump(data, outfile)
+            json.dump(data, outfile, indent=4)
 
         logger.info("🍺 Exchange settings written to mgm-config-private.json")
 
@@ -934,7 +934,7 @@ class Hurry():
 
         with open(self._basedir + '/user_data/mgm-config-private.json',
                   'w') as outfile:
-            json.dump(data, outfile)
+            json.dump(data, outfile, indent=4)
 
         logger.info(
             "🍺 Telegram bot settings written to mgm-config-private.json")
