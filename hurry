@@ -218,7 +218,7 @@ class Hurry():
 
     def install_freqtrade(self,
                           branch: str = "develop",
-                          target_dir: str = os.getcwd()):
+                          target_dir: str = None):
         '''Install Freqtrade the easy way.
 
         Args:
@@ -233,10 +233,16 @@ class Hurry():
         logger.info('👉 Install Freqtrade ')
         logger.info('💨 💨 💨')
 
+        if target_dir is None:
+            target_dir = self._basedir
+
         with tempfile.TemporaryDirectory() as tmpdirname:
-            cmd_str = f"git clone -b {branch} https://github.com/freqtrade/freqtrade.git {tmpdirname}"
-            self.__exec_cmd(cmd_str)
-            self.__exec_cmd(f'cp -rf {tmpdirname}/* {target_dir}')
+            self.__exec_cmd(
+                f"git clone -b {branch} https://github.com/freqtrade/freqtrade.git {tmpdirname}")
+
+            self.__exec_cmd(
+                f'cp -rf {tmpdirname}/* {target_dir}')
+
             self.__exec_cmd(
                 f'deactivate; bash {target_dir}/setup.sh --install')
 
@@ -246,7 +252,7 @@ class Hurry():
 
     def install_mgm(self,
                     branch: str = "development",
-                    target_dir: str = os.getcwd()):
+                    target_dir: str = None):
         '''Install the MGM strategy.
 
         Args:
@@ -261,9 +267,13 @@ class Hurry():
         logger.info('👉 Install MGM ')
         logger.info('💨 💨 💨')
 
+        if target_dir is None:
+            target_dir = self._basedir
+
         with tempfile.TemporaryDirectory() as tmpdirname:
-            cmd_str = f"git clone -b {branch} https://github.com/Rikj000/MoniGoMani.git {tmpdirname}"
-            self.__exec_cmd(cmd_str)
+            self.__exec_cmd(
+                f"git clone -b {branch} https://github.com/Rikj000/MoniGoMani.git {tmpdirname}")
+
             self.__exec_cmd(
                 f'cp -rf {tmpdirname}/user_data/* {target_dir}/user_data/')
 
@@ -943,13 +953,11 @@ class Hurry():
             )
             sys.exit(1)
 
-        logger.debug(cmd)
         proc = subprocess.Popen(cmd,
                              shell=True,
                              stdout=subprocess.PIPE,
                              encoding='utf-8')
-        output, err = proc.communicate()
-        logger.debug(output, err)
+        proc.communicate()
 
     @staticmethod
     def __read_config():
