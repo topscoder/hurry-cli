@@ -79,8 +79,9 @@ python3 hurry up
     download_static_pairlist
     download_candle_data    [--timerange=yyyymmdd-yyyymmdd]
     hyperopt                [--timerange=yyyymmdd-yyyymmdd]
-    hyperopt_show_results   EPOCH
-    hyperopt_apply_epoch    EPOCH
+    hyperopt_show_results   [--only_best=True] [--only_profitable=False]
+    hyperopt_show_epoch     num
+    hyperopt_apply_epoch    num
     start_trader            [--dry_run=true]
 
 ```

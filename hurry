@@ -714,7 +714,54 @@ class Hurry():
 
         logger.info('🍺 HyperOpt run ready... 🥵')
 
-    def hyperopt_show_results(self, epoch: int = 0):
+    def hyperopt_show_results(self, only_best: bool = True, only_profitable: bool = False):
+        '''
+        Show hyperopt results after choosing a fthypt file.
+
+        Args:
+            only_best (bool, Optional); Show only best epochs. Defaults to True.
+            only_profitable (bool, Optional); Show only profitable epochs. Defaults to False.
+
+        Todo:
+            * Sort fthypt-files based on date (newest - oldest)
+            * Pass through additional (optional) arguments to freqtrade cli
+        '''
+
+        fthypts = map(
+            os.path.basename,
+            glob.glob(self._basedir+'/user_data/hyperopt_results/*.fthypt')
+        )
+
+        dat = list(fthypts)
+
+        if len(dat) == 0:
+            logger.warning('Whoops, no hyperopt results could be found.')
+            sys.exit(1)
+
+        questions = [{
+            'type': 'list',
+            'name': 'fthypt_file',
+            'message': 'Please select the hyperopt results you want to show: ',
+            'choices': dat
+        },]
+
+        answers = prompt(questions=questions)
+
+        choice = answers.get('fthypt_file')
+
+        logger.info(
+            f'👉 Showing hyperopt results for {choice}')
+
+        best = "--best" if only_best is True else ""
+        profit = "--profitable" if only_profitable is True else ""
+
+        dcd = (f"{self.config['ft_binary']} hyperopt-list --hyperopt-filename {choice}"
+                f" -c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json {best} {profit}")
+
+        self.__exec_cmd(dcd)
+
+
+    def hyperopt_show_epoch(self, epoch: int = 0):
         '''
         Shows the HyperOpt results for given epoch.
 
@@ -727,7 +774,7 @@ class Hurry():
 
         if epoch == 0:
             logger.error(
-                '🤷‍♂️ Please pass the epoch number through. Hint: hurry hyperopt_show_results --epoch=1337'
+                '🤷‍♂️ Please pass the epoch number through. Hint: hurry hyperopt_show_epoch --epoch=1337'
             )
             sys.exit(1)
 
