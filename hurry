@@ -21,7 +21,8 @@ from art import tprint
 from InquirerPy import prompt
 from InquirerPy.validator import NumberValidator
 
-logging.basicConfig(format='= HURRY = %(levelname)s: %(message)s', level=logging.DEBUG)
+logging.basicConfig(format='= HURRY = %(levelname)s: %(message)s',
+                    level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 coloredlogs.install(level=logging.DEBUG, logger=logger)
 
@@ -101,7 +102,7 @@ class Hurry():
 
         return True
 
-    def up(self): # pylint: disable=invalid-name
+    def up(self):  # pylint: disable=invalid-name
         '''The all in one command. Hurry up, turn it up!'''
 
         questions = [
@@ -238,10 +239,10 @@ class Hurry():
 
         with tempfile.TemporaryDirectory() as tmpdirname:
             self.__exec_cmd(
-                f"git clone -b {branch} https://github.com/freqtrade/freqtrade.git {tmpdirname}")
+                f"git clone -b {branch} https://github.com/freqtrade/freqtrade.git {tmpdirname}"
+            )
 
-            self.__exec_cmd(
-                f'cp -rf {tmpdirname}/* {target_dir}')
+            self.__exec_cmd(f'cp -rf {tmpdirname}/* {target_dir}')
 
             self.__exec_cmd(
                 f'deactivate; bash {target_dir}/setup.sh --install')
@@ -250,9 +251,7 @@ class Hurry():
                 '🍺 Freqtrade has been installed. You can now proceed to install MGM. (Hint: hurry install_mgm)'
             )
 
-    def install_mgm(self,
-                    branch: str = "development",
-                    target_dir: str = None):
+    def install_mgm(self, branch: str = "development", target_dir: str = None):
         '''Install the MGM strategy.
 
         Args:
@@ -272,7 +271,8 @@ class Hurry():
 
         with tempfile.TemporaryDirectory() as tmpdirname:
             self.__exec_cmd(
-                f"git clone -b {branch} https://github.com/Rikj000/MoniGoMani.git {tmpdirname}")
+                f"git clone -b {branch} https://github.com/Rikj000/MoniGoMani.git {tmpdirname}"
+            )
 
             self.__exec_cmd(
                 f'cp -rf {tmpdirname}/user_data/* {target_dir}/user_data/')
@@ -698,10 +698,10 @@ class Hurry():
             spaces = self.config['hyperopt']['spaces']
 
         cmd = (
-                '$ft_binary hyperopt --print-all -s $ho_strategy '
-                '-c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json '
-                '--hyperopt-loss $ho_loss --spaces $ho_spaces -e $ho_epochs --timerange $timerange'
-            )
+            '$ft_binary hyperopt --print-all -s $ho_strategy '
+            '-c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json '
+            '--hyperopt-loss $ho_loss --spaces $ho_spaces -e $ho_epochs --timerange $timerange'
+        )
         cmd = Template(cmd).substitute(
             ft_binary=self.config['ft_binary'],
             ho_strategy=strategy,
@@ -714,7 +714,9 @@ class Hurry():
 
         logger.info('🍺 HyperOpt run ready... 🥵')
 
-    def hyperopt_show_results(self, only_best: bool = True, only_profitable: bool = False):
+    def hyperopt_show_results(self,
+                              only_best: bool = True,
+                              only_profitable: bool = False):
         '''
         Show hyperopt results after choosing a fthypt file.
 
@@ -729,8 +731,7 @@ class Hurry():
 
         fthypts = map(
             os.path.basename,
-            glob.glob(self._basedir+'/user_data/hyperopt_results/*.fthypt')
-        )
+            glob.glob(self._basedir + '/user_data/hyperopt_results/*.fthypt'))
 
         dat = list(fthypts)
 
@@ -738,27 +739,29 @@ class Hurry():
             logger.warning('Whoops, no hyperopt results could be found.')
             sys.exit(1)
 
-        questions = [{
-            'type': 'list',
-            'name': 'fthypt_file',
-            'message': 'Please select the hyperopt results you want to show: ',
-            'choices': dat
-        },]
+        questions = [
+            {
+                'type': 'list',
+                'name': 'fthypt_file',
+                'message':
+                'Please select the hyperopt results you want to show: ',
+                'choices': dat
+            },
+        ]
 
         answers = prompt(questions=questions)
 
         choice = answers.get('fthypt_file')
 
-        logger.info(
-            f'👉 Showing hyperopt results for {choice}')
+        logger.info("👉 Showing hyperopt results for: %(choice)s:" + choice)
 
         best = "--best" if only_best is True else ""
         profit = "--profitable" if only_profitable is True else ""
 
-        dcd = f"{self.config['ft_binary']} hyperopt-list --hyperopt-filename={choice} {best} {profit}"
+        dcd = f"{self.config['ft_binary']} hyperopt-list --hyperopt-filename '{choice}' {best} {profit}"
+        logger.debug(dcd)
 
         self.__exec_cmd(dcd)
-
 
     def hyperopt_show_epoch(self, epoch: int = 0):
         '''
@@ -802,20 +805,20 @@ class Hurry():
         logger.info(f'👉 Applying HyperOpt results of epoch # {epoch}')
 
         if run == 1:
-            self.__exec_cmd(
-                (f"{self.config['ft_binary']} hyperopt-show -n {epoch} "
-                    "-c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json "
-                    "--no-header --print-json | tail -n 1 | jq '.' > ./user_data/mgm-config-hyperopt.json")
-            )
+            self.__exec_cmd((
+                f"{self.config['ft_binary']} hyperopt-show -n {epoch} "
+                "-c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json "
+                "--no-header --print-json | tail -n 1 | jq '.' > ./user_data/mgm-config-hyperopt.json"
+            ))
         else:
-            self.__exec_cmd(
-                (f"{self.config['ft_binary']} hyperopt-show -n {epoch} "
-                    "-c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json "
-                    "--no-header --print-json | tail -n 1 | jq '.' > ./tmp.json && "
-                    "jq -s '.[0] * .[1]' ./user_data/mgm-config-hyperopt.json ./tmp.json > ./tmp2.json && "
-                    "rm ./tmp.json ./user_data/mgm-config-hyperopt.json && "
-                    "mv ./tmp2.json ./user_data/mgm-config-hyperopt.json && jq '.' ./user_data/mgm-config-hyperopt.json")
-            )
+            self.__exec_cmd((
+                f"{self.config['ft_binary']} hyperopt-show -n {epoch} "
+                "-c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json "
+                "--no-header --print-json | tail -n 1 | jq '.' > ./tmp.json && "
+                "jq -s '.[0] * .[1]' ./user_data/mgm-config-hyperopt.json ./tmp.json > ./tmp2.json && "
+                "rm ./tmp.json ./user_data/mgm-config-hyperopt.json && "
+                "mv ./tmp2.json ./user_data/mgm-config-hyperopt.json && jq '.' ./user_data/mgm-config-hyperopt.json"
+            ))
 
         logger.info(f'🍺 Hyperopt results of epoch # {epoch} are applied.')
 
@@ -834,9 +837,10 @@ class Hurry():
         if timerange is None:
             timerange = self.config['timerange']
 
-        cmd = ('$ft_binary backtesting -s $ho_strategy '
-                '-c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json '
-                '--timerange $timerange')
+        cmd = (
+            '$ft_binary backtesting -s $ho_strategy '
+            '-c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json '
+            '--timerange $timerange')
 
         if enable_protections is True:
             cmd = cmd + " --enable-protections"
@@ -861,9 +865,11 @@ class Hurry():
         logger.info('👉 Start trader ')
         logger.info('💨 💨 💨')
 
-        cmd = (f"{self.config['ft_binary']} trade "
-                "-c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json "
-                "-c ./user_data/mgm-config-hyperopt.json --strategy {self.config['hyperopt']['strategy']}")
+        cmd = (
+            f"{self.config['ft_binary']} trade "
+            "-c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json "
+            "-c ./user_data/mgm-config-hyperopt.json --strategy {self.config['hyperopt']['strategy']}"
+        )
 
         if dry_run is True:
             cmd = cmd + " --dry-run"
@@ -946,7 +952,7 @@ class Hurry():
 
         try:
             data = json.load(file)
-        except: # pylint: disable=bare-except
+        except:  # pylint: disable=bare-except
             data = {}
 
         data['exchange'] = {
@@ -986,12 +992,15 @@ class Hurry():
             "🍺 Telegram bot settings written to mgm-config-private.json")
 
     @staticmethod
-    def __exec_cmd(cmd: str):
+    def __exec_cmd(cmd: str) -> int:
         '''
         Executes shell command and logs output as debug output.
 
         Args:
             cmd (str): The command, sir
+
+        Returns:
+            returncode (int): The returncode of the subprocess
         '''
         if cmd is None or cmd == "":
             logger.error(
@@ -999,11 +1008,21 @@ class Hurry():
             )
             sys.exit(1)
 
-        proc = subprocess.Popen(cmd,
-                             shell=True,
-                             stdout=subprocess.PIPE,
-                             encoding='utf-8')
-        proc.communicate()
+        process = subprocess.Popen(cmd,
+                                   shell=True,
+                                   stdout=subprocess.PIPE,
+                                   encoding='utf-8')
+
+        while True:
+            output = process.stdout.readline()
+            if output == '' and process.poll() is not None:
+                break
+
+            if output:
+                print(output.strip())
+
+        retcode = process.poll()
+        return retcode
 
     @staticmethod
     def __read_config():
