@@ -755,7 +755,7 @@ class Hurry():
         best = "--best" if only_best is True else ""
         profit = "--profitable" if only_profitable is True else ""
 
-        dcd = f"{self.config['ft_binary']} hyperopt-list --hyperopt-filename {choice} {best} {profit}"
+        dcd = f"{self.config['ft_binary']} hyperopt-list --hyperopt-filename={choice} {best} {profit}"
 
         self.__exec_cmd(dcd)
 
