@@ -7,3 +7,4 @@
 - [ ] Save exchange settings into `.hurry` config file for faster setup next time
 - [ ] Save telegram bot settings into `.hurry` config file for faster setup next time
 - [ ] Make setting up frequi possible
+- [ ] Implement logging modes (debug, info, default)

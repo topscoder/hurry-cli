@@ -351,7 +351,7 @@ class Hurry():
                 f'{target_dir}/user_data/mgm-config-private.example.json',
                 f'{target_dir}/user_data/mgm-config-private.json')
 
-        logger.warning(f'{target_dir}/user_data/mgm-config.json')
+        logger.info('👉 MGM config files prepared')
 
     def setup(self):
         '''

@@ -112,6 +112,35 @@ $ hurry up
 
 ```
 
+```shell
+$ hurry setup
+ _                                       _  _
+| |__   _   _  _ __  _ __  _   _    ___ | |(_)
+| '_ \ | | | || '__|| '__|| | | |  / __|| || |
+| | | || |_| || |   | |   | |_| | | (__ | || |
+|_| |_| \__,_||_|   |_|    \__, |  \___||_||_|
+                           |___/
+
+1970-01-01 13:37:00 __main__[6466] DEBUG 👉 Freqtrade binary: `source ./.env/bin/activate; freqtrade`
+1970-01-01 13:37:00 __main__[6466] DEBUG 👉 MGM strategy and config found √
+1970-01-01 13:37:00 __main__[6466] INFO 💨 💨 💨
+1970-01-01 13:37:00 __main__[6466] INFO 👉 Setup
+1970-01-01 13:37:00 __main__[6466] INFO 💨 💨 💨
+1970-01-01 13:37:00 __main__[6466] INFO 🤓 Let's answer some questions to make your life easier.
+? Which way you want to use Freqtrade? source
+? Please enter the default timerange you want to use 20210127-20210221
+? Which HyperOpt Strategy do you want to use? MoniGoManiHyperStrategy
+? Which HyperOpt Loss do you want to use? WinRatioAndProfitRatioLoss
+? Which spaces do you want to HyperOpt? ['buy', 'sell']
+? Please enter the default quotation you want to use USDT
+? Please enter the amount of epochs you want to HyperOpt 75
+? Do you want to also setup your exchange? No
+1970-01-01 13:37:00 __main__[6466] INFO 🍺 Configuration data written to .hurry file
+? Do you want to also setup your Telegram bot?  No
+
+...
+```
+
 ## Development
 
 ### Yapf formatting
