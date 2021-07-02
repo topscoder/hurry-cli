@@ -238,7 +238,7 @@ class Hurry():
                     "type": "confirm",
                     "message": "It looks like Freqtrade is already installed. Proceed to overwrite?",
                     "name": "proceed",
-                    "default": True,
+                    "default": False,
                 },
             ]
 
@@ -272,12 +272,27 @@ class Hurry():
             target_dir (str, optional): Target directory to install MGM. Defaults to os.getcwd().
 
         Todo:
-            * Check if MGM was installed already and warn user it will be overwritten.
             * Probably merge mgm-config-private.json into new installation?
         '''
         logger.info('💨 💨 💨')
         logger.info('👉 Install MGM ')
         logger.info('💨 💨 💨')
+
+        # Checking mgm installation to confirm for overwrite
+        if self.__init_mgm() is True:
+            questions = [
+                {
+                    "type": "confirm",
+                    "message": "It looks like MGM is already installed. Proceed to overwrite?",
+                    "name": "proceed",
+                    "default": False,
+                },
+            ]
+
+            result = prompt(questions)
+
+            if result.get('proceed') is False:
+                sys.exit(1)
 
         if target_dir is None:
             target_dir = self._basedir
