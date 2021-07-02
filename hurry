@@ -732,6 +732,7 @@ class Hurry():
             os.path.basename,
             sorted(glob.glob(self._basedir +
                              '/user_data/hyperopt_results/*.fthypt'),
+                   key=os.path.getmtime,
                    reverse=True))
 
         dat = list(fthypts)
