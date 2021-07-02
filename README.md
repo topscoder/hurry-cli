@@ -141,6 +141,8 @@ $ hurry setup
 
 ## Development
 
+Some developer notes. Never forget.
+
 ### Yapf formatting
 
 ```shell
