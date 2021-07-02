@@ -375,9 +375,6 @@ class Hurry():
     def setup(self):
         '''
         Saves setup data based on your answers
-
-        Todo:
-            - Populate default values based on .hurry config
         '''
         logger.info('💨 💨 💨')
         logger.info('👉 Setup ')
