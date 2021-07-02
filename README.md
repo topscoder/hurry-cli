@@ -77,8 +77,8 @@ python3 hurry up
     setup
     cleanup
     download_static_pairlist
-    download_candle_data    [--timerange=yyyymmdd-yyyymmdd]
-    hyperopt                [--timerange=yyyymmdd-yyyymmdd]
+    download_candle_data    [--timerange=yyyymmdd-yyyymmdd OR --timerange=down|up|side]
+    hyperopt                [--timerange=yyyymmdd-yyyymmdd OR --timerange=down|up|side]
     hyperopt_show_results   [--only_best=True] [--only_profitable=False]
     hyperopt_show_epoch     num
     hyperopt_apply_epoch    num
