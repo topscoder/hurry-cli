@@ -730,7 +730,9 @@ class Hurry():
 
         fthypts = map(
             os.path.basename,
-            sorted( glob.glob(self._basedir + '/user_data/hyperopt_results/*.fthypt'), reverse=True) )
+            sorted(glob.glob(self._basedir +
+                             '/user_data/hyperopt_results/*.fthypt'),
+                   reverse=True))
 
         dat = list(fthypts)
 
@@ -752,7 +754,7 @@ class Hurry():
 
         choice = answers.get('fthypt_file')
 
-        logger.info("👉 Showing hyperopt results for: %(choice)s:" + choice)
+        logger.info("👉 Showing hyperopt results for: " + choice)
 
         best = "--best" if only_best is True else ""
         profit = "--profitable" if only_profitable is True else ""
@@ -1000,7 +1002,7 @@ class Hurry():
             timerange (str): the parsed timerange string in yyyymmdd-yyyymmdd format
         '''
 
-        input = timerange
+        tr_input = timerange
 
         if timerange is None:
             timerange = self.config['timerange']
@@ -1014,9 +1016,9 @@ class Hurry():
         if timerange == "up":
             timerange = '20210127-20210221'
 
-        output = timerange
+        tr_output = timerange
 
-        logger.info(f'☀️ Timerange string parsed from "{input}" to "{output}"')
+        logger.info(f'☀️ Timerange string parsed from "{tr_input}" to "{tr_output}"')
 
         return timerange
 
