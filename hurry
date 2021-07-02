@@ -264,6 +264,33 @@ class Hurry():
                 '🍺 Freqtrade has been installed. You can now proceed to install MGM. (Hint: hurry install_mgm)'
             )
 
+    def testme(self):
+        questions = [
+            {
+                "type": "confirm",
+                "message": ("Should I print your mgm-config-private.json contents "
+                                "so you can copy it over to new installation?"),
+                "name": "print",
+                "default": False,
+            },
+            {
+                "type": "confirm",
+                "message": ("WARNING: You are printing sensitive information"
+                            " which you should NEVER SHARE with anybody. Really proceed?"),
+                "name": "print_confirmed",
+                "default": False,
+                "when": lambda result: result["print"]
+            }
+        ]
+
+        result = prompt(questions)
+
+        if result.get('print_confirmed') is True:
+            # Read mgm-config-private.json and pretty print it
+            mgm_private_config = open(self._basedir + '/user_data/mgm-config-private.json', )
+            print(json.dumps(json.load(mgm_private_config), indent=4))
+
+
     def install_mgm(self, branch: str = "development", target_dir: str = None):
         '''Install the MGM strategy.
 
@@ -293,6 +320,31 @@ class Hurry():
 
             if result.get('proceed') is False:
                 sys.exit(1)
+
+            questions = [
+                {
+                    "type": "confirm",
+                    "message": ("Should I print your mgm-config-private.json contents "
+                                    "so you can copy it over to new installation?"),
+                    "name": "print",
+                    "default": False,
+                },
+                {
+                    "type": "confirm",
+                    "message": ("WARNING: You are printing sensitive information"
+                                " which you should NEVER SHARE with anybody. Really proceed?"),
+                    "name": "print_confirmed",
+                    "default": False,
+                    "when": lambda result: result["print"]
+                }
+            ]
+
+            result = prompt(questions)
+
+            if result.get('print_confirmed') is True:
+                # Read mgm-config-private.json and pretty print it
+                mgm_private_config = open(self._basedir + '/user_data/mgm-config-private.json', )
+                print(json.dumps(json.load(mgm_private_config), indent=4))
 
         if target_dir is None:
             target_dir = self._basedir
