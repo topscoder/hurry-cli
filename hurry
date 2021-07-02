@@ -264,25 +264,6 @@ class Hurry():
                 '🍺 Freqtrade has been installed. You can now proceed to install MGM. (Hint: hurry install_mgm)'
             )
 
-    def testme(self):
-        data = "buy sell"
-        res = map(
-            lambda x: {"enabled": True, "name": x['name'], "value": x['value']}
-                        if x["value"] in data.split(" ")
-                        else {"enabled": False, "name": x['name'], "value": x['value']},
-            [
-                {"enabled": False, "name": "default", "value": "default"},
-                {"enabled": False, "name": "buy", "value": "buy"},
-                {"enabled": False, "name": "sell", "value": "sell"},
-                {"enabled": False, "name": "roi", "value": "roi"},
-                {"enabled": False, "name": "stoploss", "value": "stoploss"},
-                {"enabled": False, "name": "trailing", "value": "trailing"},
-                {"enabled": False, "name": "all", "value":  "all"}
-            ]
-        )
-        print(list(res))
-
-
     def install_mgm(self, branch: str = "development", target_dir: str = None):
         '''Install the MGM strategy.
 
@@ -332,8 +313,8 @@ class Hurry():
 
             if result.get('print_confirmed') is True:
                 # Read mgm-config-private.json and pretty print it
-                mgm_private_config = open(self._basedir + '/user_data/mgm-config-private.json', )
-                print(json.dumps(json.load(mgm_private_config), indent=4))
+                with open(self._basedir + '/user_data/mgm-config-private.json', ) as mgm_private_config:
+                    print(json.dumps(json.load(mgm_private_config), indent=4))
 
         if target_dir is None:
             target_dir = self._basedir
@@ -730,22 +711,16 @@ class Hurry():
         logger.info(" 🍺 Writing pairlist to mgm-config.json... ")
 
         # Copy static pairlist to mgm-config.json as pair whitelist
-        # Todo:
-        # * Use with for resource-allocating operations
-        static_pairlist = open(
-            self._basedir +
-            '/user_data/mgm_pair_lists/Binance-USDT-Top-Volume-StaticPairList.json',
-        )
-        mgm_config_json = json.load(static_pairlist)
+        with open(self._basedir + '/user_data/mgm_pair_lists/Binance-USDT-Top-Volume-StaticPairList.json', ) \
+            as static_pairlist:
+            mgm_config_json = json.load(static_pairlist)
 
-        mgm_config = open(self._basedir + '/user_data/mgm-config.json', )
-        mgm_config_data = json.load(mgm_config)
+        with open(self._basedir + '/user_data/mgm-config.json', ) as mgm_config:
+            mgm_config_data = json.load(mgm_config)
 
-        mgm_config_data['exchange']['pair_whitelist'] = mgm_config_json[
-            'exchange']['pair_whitelist']
+        mgm_config_data['exchange']['pair_whitelist'] = mgm_config_json['exchange']['pair_whitelist']
 
-        with open(self._basedir + '/user_data/mgm-config.json',
-                  'w') as target_f:
+        with open(self._basedir + '/user_data/mgm-config.json', 'w') as target_f:
             json.dump(mgm_config_data, target_f, indent=4)
 
         # logger.error("🤷‍♂️ Something happened on the way to heaven 🌟🤦‍♀️")
@@ -1024,12 +999,11 @@ class Hurry():
         Args:
             cred (dict) - list containing values for [exchange,api_key,api_secret]
         '''
-        file = open(self._basedir + '/user_data/mgm-config-private.json', 'w+')
-
-        try:
-            data = json.load(file)
-        except:  # pylint: disable=bare-except
-            data = {}
+        with open(self._basedir + '/user_data/mgm-config-private.json', 'w+') as file:
+            try:
+                data = json.load(file)
+            except:  # pylint: disable=bare-except
+                data = {}
 
         data['exchange'] = {
             "name": cred['exchange'],
@@ -1037,8 +1011,7 @@ class Hurry():
             "secret": cred['api_secret']
         }
 
-        with open(self._basedir + '/user_data/mgm-config-private.json',
-                  'w+') as outfile:
+        with open(self._basedir + '/user_data/mgm-config-private.json', 'w+') as outfile:
             json.dump(data, outfile, indent=4)
 
         logger.info("🍺 Exchange settings written to mgm-config-private.json")
@@ -1050,9 +1023,10 @@ class Hurry():
         Args:
             opt (dict): list containing values for [enable_telegram,telegram_token,telegram_chat_id]
         '''
-        file = open(self._basedir + '/user_data/mgm-config-private.json', )
+        data = []
 
-        data = json.load(file)
+        with open(self._basedir + '/user_data/mgm-config-private.json', ) as file:
+            data = json.load(file)
 
         data['telegram'] = {
             "enabled": opt['enable_telegram'],
@@ -1060,8 +1034,7 @@ class Hurry():
             "chat_id": opt['telegram_chat_id']
         }
 
-        with open(self._basedir + '/user_data/mgm-config-private.json',
-                  'w') as outfile:
+        with open(self._basedir + '/user_data/mgm-config-private.json', 'w') as outfile:
             json.dump(data, outfile, indent=4)
 
         logger.info(
@@ -1115,20 +1088,23 @@ class Hurry():
             )
             sys.exit(1)
 
-        process = subprocess.Popen(cmd,
-                                   shell=True,
-                                   stdout=subprocess.PIPE,
-                                   encoding='utf-8')
+        retcode = 1
 
-        while True:
-            output = process.stdout.readline()
-            if output == '' and process.poll() is not None:
-                break
+        with subprocess.Popen(cmd,
+                                shell=True,
+                                stdout=subprocess.PIPE,
+                                encoding='utf-8') as process:
 
-            if output:
-                print(output.strip())
+            while True:
+                output = process.stdout.readline()
+                if output == '' and process.poll() is not None:
+                    break
 
-        retcode = process.poll()
+                if output:
+                    print(output.strip())
+
+            retcode = process.poll()
+
         return retcode
 
     @staticmethod
