@@ -226,13 +226,26 @@ class Hurry():
             branch (string, optional): Checkout a specific branch. Defaults to main.
             target_dir (string, optional): Specify a target_dir to install to.
                                             Defaults to os.getcwd().
-
-        Todo:
-            * Check if freqtrade was installed already and warn user it will be overwritten.
         '''
         logger.info('💨 💨 💨')
         logger.info('👉 Install Freqtrade ')
         logger.info('💨 💨 💨')
+
+        # Checking freqtrade installation to confirm for overwrite
+        if self.__init_freqtrade() is True:
+            questions = [
+                {
+                    "type": "confirm",
+                    "message": "It looks like Freqtrade is already installed. Proceed to overwrite?",
+                    "name": "proceed",
+                    "default": True,
+                },
+            ]
+
+            result = prompt(questions)
+
+            if result.get('proceed') is False:
+                sys.exit(1)
 
         if target_dir is None:
             target_dir = self._basedir
@@ -722,10 +735,6 @@ class Hurry():
         Args:
             only_best (bool, Optional); Show only best epochs. Defaults to True.
             only_profitable (bool, Optional); Show only profitable epochs. Defaults to False.
-
-        Todo:
-            * Sort fthypt-files based on date (newest - oldest)
-            * Pass through additional (optional) arguments to freqtrade cli
         '''
 
         fthypts = map(
