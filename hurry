@@ -473,6 +473,7 @@ class Hurry():
             timerange (str, Optional): Timerange from/to in string format (start-end):
                                         yyyymmdd-yyyymmdd. Defaults to timerange out of
                                         .hurry config file.
+                                    -or- for preset timerange: down, side, up
         '''
         logger.info('💨 💨 💨')
         logger.info('👉 Download candle data ')
@@ -482,8 +483,7 @@ class Hurry():
             logger.error('No Hurry config file found. Please run: hurry setup')
             sys.exit(0)
 
-        if timerange is None:
-            timerange = self.config['timerange']
+        timerange = self.__get_preset_timerange(timerange)
 
         self.__init_freqtrade()
 
@@ -679,7 +679,7 @@ class Hurry():
         HyperOpt Magic. Runs HyperOpt process to find out the most positive settings.
 
         Args:
-            timerange (str, Optional): timerange from/to in format (start-end): yyyymmdd-yyyymmdd
+            timerange (str, Optional): timerange from/to in format (start-end): yyyymmdd-yyyymmdd or preset [up, down, side]
             strategy (str, Optional): Hyper Opt strategy to use. Defaults to MoniGoManiHyperStrategy
             spaces (str, Optional): Spaces (space delimited) to optimize for [default, all, buy, sell, roi, stoploss, etc]
         '''
@@ -688,8 +688,7 @@ class Hurry():
             '👉 Starting HyperOpt run. Keep calm while your computer burns 🔥')
         logger.info('💨 💨 💨')
 
-        if timerange is None:
-            timerange = self.config['timerange']
+        timerange = self.__get_preset_timerange(timerange)
 
         if strategy is None:
             strategy = self.config['hyperopt']['strategy']
@@ -834,8 +833,7 @@ class Hurry():
         logger.info('👉 Start backtesting. Lets see how it all turns out!')
         logger.info('💨 💨 💨')
 
-        if timerange is None:
-            timerange = self.config['timerange']
+        timerange = self.__get_preset_timerange(timerange)
 
         cmd = (
             '$ft_binary backtesting -s $ho_strategy '
@@ -990,6 +988,37 @@ class Hurry():
 
         logger.info(
             "🍺 Telegram bot settings written to mgm-config-private.json")
+
+    def __get_preset_timerange(self, timerange: str) -> str:
+        '''
+        Parses given timerange-string into according timerange dates
+
+        Args:
+            timerange (str): the timerange-string to parse [up, down, side]
+
+        Returns:
+            timerange (str): the parsed timerange string in yyyymmdd-yyyymmdd format
+        '''
+
+        input = timerange
+
+        if timerange is None:
+            timerange = self.config['timerange']
+
+        if timerange == "down":
+            timerange = '20210509-20210524'
+
+        if timerange == "side":
+            timerange = '20210518-20210610'
+
+        if timerange == "up":
+            timerange = '20210127-20210221'
+
+        output = timerange
+
+        logger.info(f'☀️ Timerange string parsed from "{input}" to "{output}"')
+
+        return timerange
 
     @staticmethod
     def __exec_cmd(cmd: str) -> int:
