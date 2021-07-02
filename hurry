@@ -265,30 +265,22 @@ class Hurry():
             )
 
     def testme(self):
-        questions = [
-            {
-                "type": "confirm",
-                "message": ("Should I print your mgm-config-private.json contents "
-                                "so you can copy it over to new installation?"),
-                "name": "print",
-                "default": False,
-            },
-            {
-                "type": "confirm",
-                "message": ("WARNING: You are printing sensitive information"
-                            " which you should NEVER SHARE with anybody. Really proceed?"),
-                "name": "print_confirmed",
-                "default": False,
-                "when": lambda result: result["print"]
-            }
-        ]
-
-        result = prompt(questions)
-
-        if result.get('print_confirmed') is True:
-            # Read mgm-config-private.json and pretty print it
-            mgm_private_config = open(self._basedir + '/user_data/mgm-config-private.json', )
-            print(json.dumps(json.load(mgm_private_config), indent=4))
+        data = "buy sell"
+        res = map(
+            lambda x: {"enabled": True, "name": x['name'], "value": x['value']}
+                        if x["value"] in data.split(" ")
+                        else {"enabled": False, "name": x['name'], "value": x['value']},
+            [
+                {"enabled": False, "name": "default", "value": "default"},
+                {"enabled": False, "name": "buy", "value": "buy"},
+                {"enabled": False, "name": "sell", "value": "sell"},
+                {"enabled": False, "name": "roi", "value": "roi"},
+                {"enabled": False, "name": "stoploss", "value": "stoploss"},
+                {"enabled": False, "name": "trailing", "value": "trailing"},
+                {"enabled": False, "name": "all", "value":  "all"}
+            ]
+        )
+        print(list(res))
 
 
     def install_mgm(self, branch: str = "development", target_dir: str = None):
@@ -297,9 +289,6 @@ class Hurry():
         Args:
             branch (str, optional): Git-branch to install. Defaults to "development".
             target_dir (str, optional): Target directory to install MGM. Defaults to os.getcwd().
-
-        Todo:
-            * Probably merge mgm-config-private.json into new installation?
         '''
         logger.info('💨 💨 💨')
         logger.info('👉 Install MGM ')
@@ -394,7 +383,7 @@ class Hurry():
         logger.info('👉 Setup ')
         logger.info('💨 💨 💨')
 
-        logger.info("🤓 Let's answer some questions to make our lifes easier.")
+        logger.info("🤓 Let's answer some questions to make your life easier.")
 
         strategies = map(
             lambda f: os.path.basename(f).replace(".py", ""),
@@ -428,48 +417,61 @@ class Hurry():
             )
             sys.exit(1)
 
+        existing_config = self.__read_config()
+
         questions = [{
             "type": "list",
             "name": "install_type",
             "message": "Which way you want to use Freqtrade?",
-            "choices": ["docker", "source"]
+            "choices": ["docker", "source"],
+            "default": existing_config["install_type"] or ""
         }, {
             "type": "input",
             "name": "timerange",
             "message": "Please enter the default timerange you want to use",
-            "default": "20201201-20210316"
+            "default": existing_config["timerange"] or "20201201-20210316"
         }, {
             "type": "list",
             "name": "ho_strategy",
             "message": "Which HyperOpt Strategy do you want to use?",
-            "choices": strategies_choices
+            "choices": strategies_choices,
+            "default": existing_config["hyperopt"]["strategy"] or "" # fixme; what if strat from config not exists?
         }, {
             "type": "list",
             "name": "ho_loss",
             "message": "Which HyperOpt Loss do you want to use?",
-            "choices": hyperopts_choices
+            "choices": hyperopts_choices,
+            "default": existing_config["hyperopt"]["loss"] or "" # fixme; what if loss file from config not exists?
         }, {
-            "type":
-            "checkbox",
-            "name":
-            "ho_spaces",
-            "message":
-            "Which spaces do you want to HyperOpt?",
-            "choices":
-            ["default", "buy", "sell", "roi", "stoploss", "trailing", "all"],
-            "filter":
-            lambda val: " ".join(val)
+            "type": "checkbox",
+            "name": "ho_spaces",
+            "message": "Which spaces do you want to HyperOpt?",
+            "choices": map(
+                lambda x: {"enabled": True, "name": x['name'], "value": x['value']}
+                            if x["value"] in existing_config["hyperopt"]["spaces"].split(" ")
+                            else {"enabled": False, "name": x['name'], "value": x['value']},
+                [
+                    {"enabled": False, "name": "default", "value": "default"},
+                    {"enabled": False, "name": "buy", "value": "buy"},
+                    {"enabled": False, "name": "sell", "value": "sell"},
+                    {"enabled": False, "name": "roi", "value": "roi"},
+                    {"enabled": False, "name": "stoploss", "value": "stoploss"},
+                    {"enabled": False, "name": "trailing", "value": "trailing"},
+                    {"enabled": False, "name": "all", "value":  "all"}
+                ]
+            ),
+            "filter": lambda val: " ".join(val)
         }, {
             "type": "input",
             "name": "ho_quotation",
             "message": "Please enter the default quotation you want to use",
-            "default": "BTC"
+            "default": existing_config["hyperopt"]["quote"] or "BTC"
         }, {
             "type": "input",
             "name": "ho_epochs",
             "message":
             "Please enter the amount of epochs you want to HyperOpt",
-            "default": "800",
+            "default": str(existing_config["hyperopt"]["epochs"]) or "800",
             "filter": lambda val: int(val)
         }, {
             "type": "confirm",
@@ -503,11 +505,11 @@ class Hurry():
             'config': {
                 'install_type': answers.get('install_type'),
                 'timerange': answers.get('timerange'),
-                'exchange': answers.get('exchange'),
+                'exchange': answers.get('exchange') or "none",
                 'hyperopt': {
                     'strategy': answers.get('ho_strategy'),
                     'loss': answers.get('ho_loss'),
-                    'spaces': answers.get('ho_spaces'),
+                    'spaces': answers.get('ho_spaces') or "default",
                     'quote': answers.get('ho_quotation'),
                     'epochs': answers.get('ho_epochs')
                 }
