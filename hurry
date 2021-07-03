@@ -41,25 +41,40 @@ class Hurry():
 
         self._basedir = os.getcwd()
 
-        self.__reload_config()
+        if self.__reload_config() is False:
+            logger.error('⚠️ Failed to load or create .hurry config file.')
+
         self.__init_freqtrade()
         self.__init_mgm()
 
     def __reload_config(self) -> bool:
+        '''
+        Reads configuration from .hurry file and stores
+        in self.config attribute.
+        Creates new .hurry config file with default values
+        if no .hurry config file could be found.
+
+        Returns:
+            result (bool); True in fact.
+        '''
+
         self.config = None
+
+        if os.path.exists(".hurry") is False:
+            # Create bare .hurry config file
+            self.__write_config()
 
         if os.path.exists(".hurry") is True:
             self.config = self.__read_config()
-            return True
 
-        return False
+        return True
 
     def __init_freqtrade(self) -> bool:
         '''
         Initializes the Freqtrade binary
 
         Returns:
-            bool: True if freqtrade installation is found. False otherwise.
+            results (bool): True if freqtrade installation is found. False otherwise.
         '''
 
         if os.path.exists(f"{self._basedir}/.env/bin/freqtrade") is False:
@@ -1107,8 +1122,7 @@ class Hurry():
 
         return retcode
 
-    @staticmethod
-    def __read_config():
+    def __read_config(self):
         '''
         Reads config values out of .hurry config file.
 
@@ -1121,13 +1135,20 @@ class Hurry():
         if 'config' in cfg:
             return cfg['config']
 
+        # Something happened on the way to heaven
+        # Let's fix it to create a default .hurry config file
+        self.__write_config()
+
         return None
 
     def __write_config(self, config: dict = None):
-        '''Write config-array to .hurry config file. Hooray!
+        '''
+        Write config-array to .hurry config file.
+        Writes the passed config dicationary or if
+        nothing passed, it will write default values.
 
         Args:
-            config (object, Optional): The config values to store. Defaults to None.
+            config (dict, Optional): The config values to store. Defaults to None.
         '''
         if config is None:
             config = {
@@ -1145,7 +1166,7 @@ class Hurry():
                 }
             }
 
-        with open(r'.hurry', 'w') as file:
+        with open('.hurry', 'w+') as file:
             yaml.dump(config, file)
 
         self.__reload_config()
