@@ -8,3 +8,6 @@
 - [ ] Save telegram bot settings into `.hurry` config file for faster setup next time
 - [ ] Make setting up frequi possible
 - [ ] Implement logging modes (debug, info, default)
+- [ ] Implement some movement in CLI at time consuming tasks. It sometimes looks like nothing happens, but it does!
+  - [Yaspin](https://github.com/pavdmyt/yaspin)
+-
