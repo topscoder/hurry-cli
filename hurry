@@ -190,11 +190,11 @@ class Hurry():
         if answers.get('run_setup') is True:
             self.setup()
 
-        if answers.get('download_data') is True:
-            self.download_candle_data()
-
         if answers.get('download_static_pairlist') is True:
             self.download_static_pairlist()
+
+        if answers.get('download_data') is True:
+            self.download_candle_data()
 
         if answers.get('do_hyperopt') is True:
             # First HO run
