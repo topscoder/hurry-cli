@@ -138,13 +138,13 @@ class Hurry():
             },
             {
                 "type": "confirm",
-                "name": "download_data",
-                "message": "💨 Do you want to download candle data now?"
+                "name": "download_static_pairlist",
+                "message": "💨 Do you want to generate a static pairlist now?"
             },
             {
                 "type": "confirm",
-                "name": "download_static_pairlist",
-                "message": "💨 Do you want to generate a static pairlist now?"
+                "name": "download_data",
+                "message": "💨 Do you want to download candle data now?"
             },
             {
                 "type": "confirm",
