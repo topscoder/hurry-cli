@@ -749,14 +749,18 @@ class Hurry():
     def hyperopt(self,
                  timerange: str = None,
                  strategy: str = None,
-                 spaces: str = None):
+                 spaces: str = None,
+                 enable_protections: bool = True,
+                 apply_best_results: bool = False):
         '''
         HyperOpt Magic. Runs HyperOpt process to find out the most positive settings.
 
         Args:
             timerange (str, Optional): timerange from/to in format (start-end): yyyymmdd-yyyymmdd or preset [up, down, side]
-            strategy (str, Optional): Hyper Opt strategy to use. Defaults to MoniGoManiHyperStrategy
+            strategy (str, Optional): Hyper Opt strategy to use. Defaults to MoniGoManiHyperStrategy.
             spaces (str, Optional): Spaces (space delimited) to optimize for [default, all, buy, sell, roi, stoploss, etc]
+            enable_protections (bool, Optional): Add '--enable-protections' flag to HO-command. Defaults to True.
+            apply_best_results (bool, Optional): Apply 'best' HO results direct after HO? Defaults to False.
         '''
         logger.info('💨 💨 💨')
         logger.info(
@@ -772,10 +776,19 @@ class Hurry():
             spaces = self.config['hyperopt']['spaces']
 
         cmd = (
-            '$ft_binary hyperopt --print-all -s $ho_strategy '
-            '-c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json '
-            '--hyperopt-loss $ho_loss --spaces $ho_spaces -e $ho_epochs --timerange $timerange'
+            (
+                f'$ft_binary hyperopt -s $ho_strategy '
+                '-c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json '
+                f'--hyperopt-loss $ho_loss --spaces $ho_spaces -e $ho_epochs --timerange $timerange '
+            )
         )
+
+        if enable_protections is True:
+            cmd = cmd.strip() + ' --enable-protections'
+
+        if apply_best_results is True:
+            cmd = cmd.strip() + ' && mv ./user_data/strategies/MoniGoManiHyperStrategy.json ./user_data/mgm-config-hyperopt.json'
+
         cmd = Template(cmd).substitute(
             ft_binary=self.config['ft_binary'],
             ho_strategy=strategy,
@@ -877,21 +890,12 @@ class Hurry():
 
         logger.info(f'👉 Applying HyperOpt results of epoch # {epoch}')
 
-        if run == 1:
-            self.__exec_cmd((
-                f"{self.config['ft_binary']} hyperopt-show -n {epoch} "
-                "-c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json "
-                "--no-header --print-json | tail -n 1 | jq '.' > ./user_data/mgm-config-hyperopt.json"
-            ))
-        else:
-            self.__exec_cmd((
-                f"{self.config['ft_binary']} hyperopt-show -n {epoch} "
-                "-c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json "
-                "--no-header --print-json | tail -n 1 | jq '.' > ./tmp.json && "
-                "jq -s '.[0] * .[1]' ./user_data/mgm-config-hyperopt.json ./tmp.json > ./tmp2.json && "
-                "rm ./tmp.json ./user_data/mgm-config-hyperopt.json && "
-                "mv ./tmp2.json ./user_data/mgm-config-hyperopt.json && jq '.' ./user_data/mgm-config-hyperopt.json"
-            ))
+        # View & Apply HyperOpt Results from a trusted <epoch of choice>:
+        self.__exec_cmd(
+            (f"{self.config['ft_binary']} hyperopt-show -n {epoch} "
+            f"-c ./user_data/mgm-config.json -c ./user_data/mgm-config-private.json "
+            f" && mv ./user_data/strategies/MoniGoManiHyperStrategy.json ./user_data/mgm-config-hyperopt.json")
+        )
 
         logger.info(f'🍺 Hyperopt results of epoch # {epoch} are applied.')
 
