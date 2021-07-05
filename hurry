@@ -705,6 +705,12 @@ class Hurry():
         logger.info('👉 Computing Top Volume Static Pairlist')
         logger.info('💨 💨 💨')
 
+        if self.__reload_config() is False:
+            logger.error('No Hurry config file found. Please run: hurry setup')
+            sys.exit(0)
+
+        self.__init_freqtrade()
+
         target_file = '$basedir/user_data/mgm_pair_lists/$exchange-$hyperopt_quote-Top-Volume-StaticPairList.json'
         target_file = Template(target_file).substitute(
             basedir=self._basedir,
