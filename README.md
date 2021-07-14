@@ -1,5 +1,12 @@
 
 <p align="center">
+  
+  ⚠️ <br>
+  Hurry will continue his turbulent life integrated at the one and only [MoniGoMani project](https://github.com/Rikj000/MoniGoMani). Which is entirely cool of course 🥳 <br>
+  ⚠️ <br>
+  
+  <hr>
+  
 <img src="https://user-images.githubusercontent.com/86197446/123507408-6d624900-d669-11eb-9606-4a022bc4a117.png" width="300" height="289" align="center">
 </p>
 
